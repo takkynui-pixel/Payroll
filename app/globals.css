@@ -1,0 +1,66 @@
+@import "tailwindcss";
+
+/*
+ * โทนสีและฟอนต์ตามแบรนด์ VTA Service
+ *   น้ำเงินหลัก #1565C0 / ฟ้า #42A5F5 / กรมท่า #0D2B5E / พื้นฟ้าอ่อน #EFF6FF / เทาน้ำเงิน #4B6A8A
+ * สีสถานะ (ok / warn / danger) เป็นสีใช้งานเพื่อสื่อความหมาย ไม่ใช่สีแบรนด์
+ */
+:root {
+  --navy: #0d2b5e;
+  --brand: #1565c0;
+  --sky: #42a5f5;
+  --mist: #eff6ff;
+  --muted: #4b6a8a;
+  --line: #d3e2f4;
+  --surface: #ffffff;
+  --ok: #12603a;
+  --warn: #7a4a00;
+  --danger: #b42318;
+}
+
+@theme inline {
+  --color-navy: var(--navy);
+  --color-brand: var(--brand);
+  --color-sky: var(--sky);
+  --color-mist: var(--mist);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-surface: var(--surface);
+  --color-ok: var(--ok);
+  --color-warn: var(--warn);
+  --color-danger: var(--danger);
+  --font-sans: "Prompt", "Noto Sans Thai", "Leelawadee UI", "Tahoma", system-ui, sans-serif;
+}
+
+html {
+  font-family: var(--font-sans);
+}
+
+body {
+  background: var(--mist);
+  color: var(--navy);
+  line-height: 1.65;
+}
+
+/* โฟกัสด้วยคีย์บอร์ดต้องเห็นชัดทุกจุด */
+:focus-visible {
+  outline: 2px solid var(--sky);
+  outline-offset: 2px;
+}
+
+/* ตัวเลขเงินให้ตรงหลักกัน */
+.num {
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  white-space: nowrap;
+}
+
+/* พิมพ์สลิป: ซ่อนเมนู ใช้พื้นขาว */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  body {
+    background: #fff;
+  }
+}
