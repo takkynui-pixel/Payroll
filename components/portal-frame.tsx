@@ -14,7 +14,11 @@ interface FrameProps {
 async function PortalGate({ allowed, portal, nav, children }: FrameProps) {
   const session = await requireRole(allowed);
   return (
-    <AppShell email={session.email} portal={portal} nav={nav}>
+    <AppShell
+      email={session.email}
+      portal={portal}
+      nav={nav.filter((n) => !n.onlyRole || session.roles.some((r) => r === n.onlyRole))}
+    >
       {children}
     </AppShell>
   );

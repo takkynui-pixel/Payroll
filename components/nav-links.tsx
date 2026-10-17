@@ -7,6 +7,8 @@ import { cn } from "@/lib/cn";
 export interface NavItem {
   href: string;
   label: string;
+  /** แสดงเฉพาะผู้ที่มี role นี้ (ไม่ระบุ = ทุกคนในพอร์ทัล) */
+  onlyRole?: string;
 }
 
 export function NavLinks({ items }: { items: NavItem[] }) {

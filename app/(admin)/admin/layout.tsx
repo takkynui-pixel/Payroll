@@ -7,6 +7,7 @@ const NAV = [
   { href: "/admin/companies", label: "บริษัทลูกค้า" },
   { href: "/admin/employees", label: "พนักงาน" },
   { href: "/admin/payroll", label: "งวดเงินเดือน" },
+  { href: "/admin/users", label: "ผู้ใช้และสิทธิ์", onlyRole: "super_admin" },
 ];
 
 export default function AdminLayout({ children }: { children: ReactNode }) {

@@ -975,7 +975,36 @@ export type Database = {
         Args: { p_new_status: string; p_note?: string; p_period: string };
         Returns: Database["public"]["Tables"]["payroll_periods"]["Row"];
       };
+      /** [PENDING 004] */
+      add_member: { Args: { p_company?: string; p_email: string; p_role: string }; Returns: string };
       get_employee_id_card: { Args: { p_employee: string }; Returns: string };
+      /** [PENDING 004] */
+      link_employee_account: {
+        Args: { p_company: string; p_email: string; p_employee_code: string };
+        Returns: string;
+      };
+      /** [PENDING 004] */
+      list_access: {
+        Args: Record<PropertyKey, never>;
+        Returns: {
+          kind: string;
+          ref_id: string;
+          user_id: string;
+          email: string | null;
+          role: string;
+          company_id: string | null;
+          company_name: string | null;
+          display_name: string | null;
+          is_active: boolean;
+          last_sign_in_at: string | null;
+        }[];
+      };
+      /** [PENDING 004] */
+      remove_member: { Args: { p_member: string }; Returns: undefined };
+      /** [PENDING 004] */
+      set_member_active: { Args: { p_active: boolean; p_member: string }; Returns: undefined };
+      /** [PENDING 004] */
+      unlink_employee_account: { Args: { p_employee: string }; Returns: undefined };
       /** [PENDING 003] */
       save_payroll_results: {
         Args: { p_period: string; p_results: Json };
