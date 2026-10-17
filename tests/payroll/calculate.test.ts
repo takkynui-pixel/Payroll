@@ -189,12 +189,12 @@ describe("กรณีขอบ", () => {
     expect(noTax.warnings).toEqual([]);
   });
 
-  it("ค่าจ้างต่ำกว่าขั้นต่ำ สปส. -> ฐาน 1,650 = 82.50", () => {
+  it("ค่าจ้างต่ำกว่าขั้นต่ำ สปส. -> ฐาน 1,650 = 83 (ปัดเป็นบาทตามค่าเริ่มต้น)", () => {
     const o = calculatePayroll(
       payrollInput({ employee: employee({ baseSalary: 1000, taxDeductType: "no_tax" }) }),
     );
     expect(o.ssWageBase).toBe(1650);
-    expect(o.socialSecurityAmount).toBe(82.5);
+    expect(o.socialSecurityAmount).toBe(83);
   });
 
   it("รายรับที่ไม่ใช่เงินได้ที่เสียภาษีไม่เข้าฐานภาษี แต่เข้ารายได้รวม", () => {

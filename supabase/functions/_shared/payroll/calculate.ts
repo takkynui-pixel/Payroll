@@ -8,7 +8,7 @@ export const CALC_VERSION = "2026.10.1";
 export const DEFAULT_OPTIONS: CalcOptions = {
   monthlyDivisor: 30,
   hoursPerDay: 8,
-  ssRounding: "satang",
+  ssRounding: "baht",
 };
 
 const EMPTY_TIMESHEET: TimesheetInput = {

@@ -70,6 +70,21 @@ describe("ประกันสังคม ม.33", () => {
     expect(fromSatang(r.employeeSatang)).toBe(82.5);
   });
 
+  // คู่ (ค่าจ้าง -> เงินสมทบ) จากไฟล์นำส่ง สปส. จริงเดือน ก.ย. 2026 (69 แถวตรงกันทุกแถวเมื่อปัดเป็นบาทเต็ม)
+  it.each([
+    [745, 83],
+    [1117, 83],
+    [3115, 156],
+    [5486, 274],
+    [7857, 393],
+    [8434, 422],
+    [9042, 452],
+    [25750, 875],
+    [30000, 875],
+  ])("ตรงกับไฟล์ สปส. จริง: ค่าจ้าง %d -> %d", (wage, expected) => {
+    expect(fromSatang(ss(wage, true, "baht").employeeSatang)).toBe(expected);
+  });
+
   it("ค่าจ้างเท่าขอบเพดาน/ขั้นต่ำพอดี", () => {
     expect(fromSatang(ss(17500).employeeSatang)).toBe(875);
     expect(fromSatang(ss(1650).employeeSatang)).toBe(82.5);

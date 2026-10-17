@@ -975,8 +975,56 @@ export type Database = {
         Args: { p_new_status: string; p_note?: string; p_period: string };
         Returns: Database["public"]["Tables"]["payroll_periods"]["Row"];
       };
+      /** [PENDING 005] */
+      add_employee_salary: {
+        Args: {
+          p_base: number;
+          p_effective: string;
+          p_employee: string;
+          p_note?: string;
+          p_pay_type: string;
+          p_ss: boolean;
+          p_tax_type: string;
+        };
+        Returns: string;
+      };
+      /** [PENDING 005] */
+      create_employee: {
+        Args: {
+          p_bank_account: string;
+          p_bank_code: string;
+          p_base_salary: number;
+          p_code: string;
+          p_company: string;
+          p_effective?: string;
+          p_email: string;
+          p_first: string;
+          p_hire_date: string;
+          p_id_card?: string;
+          p_last: string;
+          p_pay_type: string;
+          p_phone: string;
+          p_ss: boolean;
+          p_tax_type: string;
+          p_title: string;
+        };
+        Returns: string;
+      };
+      /** [PENDING 005] */
+      import_employees: { Args: { p_company: string; p_file_name: string; p_rows: Json }; Returns: number };
+      /** [PENDING 005] */
+      import_period_data: {
+        Args: { p_adjustments: Json; p_file_name: string; p_period: string; p_timesheets: Json };
+        Returns: Json;
+      };
+      /** [PENDING 005] */
+      change_salary: { Args: { p_employee: string; p_salary: Json }; Returns: string };
+      /** [PENDING 005] */
+      create_employees: { Args: { p_company: string; p_rows: Json }; Returns: number };
+      /** [PENDING 005] */
+      import_timesheets: { Args: { p_adjustments?: Json; p_period: string; p_rows: Json }; Returns: Json };
       /** [PENDING 004] */
-      add_member: { Args: { p_company?: string; p_email: string; p_role: string }; Returns: string };
+      add_member:{ Args: { p_company?: string; p_email: string; p_role: string }; Returns: string };
       get_employee_id_card: { Args: { p_employee: string }; Returns: string };
       /** [PENDING 004] */
       link_employee_account: {

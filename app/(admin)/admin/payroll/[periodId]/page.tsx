@@ -90,10 +90,14 @@ export default async function PeriodDetailPage({ params }: { params: Promise<{ p
                 <dd className="num mt-0.5 !text-left text-lg font-medium">{(adjustments.count ?? 0).toLocaleString("th-TH")}</dd>
               </div>
             </dl>
-            <p className="max-w-2xl text-sm text-muted">
-              ยังไม่มีหน้านำเข้า Excel ในระบบ ตอนนี้เพิ่มข้อมูลเวลาทำงาน (employee_timesheets) และรายการเพิ่ม/หัก (payroll_adjustments)
-              ได้ที่ฐานข้อมูลโดยตรง พนักงานที่ไม่มีแถวเวลาทำงานจะคำนวณเป็นทำงานเต็มงวดไม่มี OT และระบบจะแจ้งเป็นคำเตือน
-            </p>
+            <div className="flex flex-wrap items-center gap-3">
+              <Link href={`/admin/import?period=${periodId}`} className={buttonClass({ variant: "secondary" })}>
+                นำเข้าเวลาทำงานจาก Excel
+              </Link>
+              <p className="max-w-2xl text-sm text-muted">
+                พนักงานรายเดือนที่ไม่มีแถวเวลาทำงานจะคิดเต็มงวดไม่มี OT ส่วนรายวัน/รายชั่วโมงที่ไม่มีแถวจะได้ค่าจ้างฐาน 0 ระบบแจ้งเป็นคำเตือนตอนคำนวณ
+              </p>
+            </div>
             <CalculatePanel periodId={periodId} hasResults={rows.length > 0} />
           </>
         ) : null}

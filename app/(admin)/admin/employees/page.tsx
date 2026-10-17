@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { Metadata } from "next";
 import { z } from "zod";
 import { EmptyState, PageHeader } from "@/components/page-header";
@@ -41,7 +42,20 @@ export default async function EmployeesPage({
 
   return (
     <>
-      <PageHeader title="พนักงาน" description="เลขบัญชีแสดงเฉพาะ 4 ตัวท้าย เลขบัตรประชาชนไม่แสดงในหน้านี้" />
+      <PageHeader
+        title="พนักงาน"
+        description="เลขบัญชีแสดงเฉพาะ 4 ตัวท้าย เลขบัตรประชาชนไม่แสดงในหน้านี้"
+        action={
+          <div className="flex gap-2">
+            <Link href="/admin/import" className={buttonClass({ variant: "secondary" })}>
+              นำเข้าจาก Excel
+            </Link>
+            <Link href={companyId ? `/admin/employees/new?company=${companyId}` : "/admin/employees/new"} className={buttonClass()}>
+              เพิ่มพนักงาน
+            </Link>
+          </div>
+        }
+      />
 
       <form method="get" className="mb-4 flex flex-wrap items-end gap-3">
         <div className="space-y-1.5">
@@ -66,7 +80,7 @@ export default async function EmployeesPage({
 
       {employees.length === 0 ? (
         <EmptyState title="ไม่พบพนักงาน">
-          ยังไม่มีพนักงานในเงื่อนไขนี้ ตอนนี้ระบบยังไม่มีหน้าเพิ่มพนักงานและนำเข้าจาก Excel เพิ่มข้อมูลได้ที่ฐานข้อมูลโดยตรงไปก่อน
+          ยังไม่มีพนักงานในเงื่อนไขนี้ เพิ่มทีละคนหรือนำเข้าจาก Excel ได้จากปุ่มด้านบน
         </EmptyState>
       ) : (
         <>
@@ -99,7 +113,11 @@ export default async function EmployeesPage({
                 {employees.map((e) => (
                   <tr key={e.id} className={trClass}>
                     <td className={`${tdClass} text-muted`}>{e.employee_code}</td>
-                    <td className={`${tdClass} font-medium`}>{employeeDisplayName(e)}</td>
+                    <td className={`${tdClass} font-medium`}>
+                      <Link href={`/admin/employees/${e.id}`} className="text-brand hover:underline">
+                        {employeeDisplayName(e)}
+                      </Link>
+                    </td>
                     <td className={tdClass}>{nameOf.get(e.company_id) ?? "-"}</td>
                     <td className={tdClass}>{formatDateTh(e.hire_date)}</td>
                     <td className={tdClass}>
