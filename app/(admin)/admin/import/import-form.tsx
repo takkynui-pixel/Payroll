@@ -36,7 +36,7 @@ export function ImportForm({
   const issues = state?.issues ?? [];
 
   return (
-    <section aria-labelledby={`${id}-title`} className="space-y-4 rounded-md border border-line bg-surface p-4">
+    <section aria-labelledby={`${id}-title`} className="space-y-4 rounded-xl border border-line/60 bg-surface shadow-card p-4">
       <div>
         <h2 id={`${id}-title`} className="font-semibold text-navy">
           {title}

@@ -14,7 +14,7 @@ export function WorkflowStepper({ status }: { status: string }) {
   const fill = (Math.min(current, n - 1) / (n - 1)) * 80;
 
   return (
-    <div className="relative rounded-md border border-line bg-surface px-2 py-5 sm:px-6">
+    <div className="relative rounded-xl border border-line/60 bg-surface shadow-card px-2 py-5 sm:px-6">
       <span aria-hidden className="absolute left-[10%] right-[10%] top-[33px] h-[3px] rounded-full bg-line sm:left-[calc(10%+0.3rem)]" />
       <span
         aria-hidden

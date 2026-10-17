@@ -10,6 +10,7 @@
   --brand: #1565c0;
   --sky: #42a5f5;
   --mist: #eff6ff;
+  --page: #f2f6fb;
   --muted: #4b6a8a;
   --line: #d3e2f4;
   --surface: #ffffff;
@@ -23,6 +24,8 @@
   --color-brand: var(--brand);
   --color-sky: var(--sky);
   --color-mist: var(--mist);
+  --color-page: var(--page);
+  --shadow-card: 0 1px 2px rgb(13 43 94 / 0.05), 0 6px 20px rgb(13 43 94 / 0.06);
   --color-muted: var(--muted);
   --color-line: var(--line);
   --color-surface: var(--surface);
@@ -37,7 +40,7 @@ html {
 }
 
 body {
-  background: var(--mist);
+  background: var(--page);
   color: var(--navy);
   line-height: 1.65;
 }
@@ -55,6 +58,11 @@ body {
   white-space: nowrap;
 }
 
+/* แถบเมนูซ้าย: ฟ้าสว่าง ตัวอักษรกรมท่าเพื่อให้อ่านชัด (ความต่างสีผ่านเกณฑ์ WCAG AA) */
+.sidebar-surface {
+  background: linear-gradient(180deg, #b3ddff 0%, #cfe9ff 55%, #e0f1ff 100%);
+}
+
 /* พิมพ์สลิป: ซ่อนเมนู ใช้พื้นขาว */
 @media print {
   .no-print {
@@ -62,5 +70,8 @@ body {
   }
   body {
     background: #fff;
+  }
+  .shadow-card {
+    box-shadow: none;
   }
 }

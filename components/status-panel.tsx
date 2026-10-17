@@ -46,7 +46,7 @@ function ActionForm({ periodId, action }: { periodId: string; action: WorkflowAc
 export function StatusPanel({ periodId, actions }: { periodId: string; actions: WorkflowAction[] }) {
   if (actions.length === 0) return null;
   return (
-    <div className="flex flex-wrap items-start gap-6 rounded-md border border-line bg-surface p-4">
+    <div className="flex flex-wrap items-start gap-6 rounded-xl border border-line/60 bg-surface shadow-card p-4">
       {actions.map((a) => (
         <ActionForm key={a.to} periodId={periodId} action={a} />
       ))}

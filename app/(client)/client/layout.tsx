@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { PortalFrame } from "@/components/portal-frame";
 
-const NAV = [{ href: "/client", label: "งวดเงินเดือน" }];
+const NAV = [{ href: "/client", label: "งวดเงินเดือน", icon: "payroll" as const }];
 
 export default function ClientLayout({ children }: { children: ReactNode }) {
   return (

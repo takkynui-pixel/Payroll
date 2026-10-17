@@ -78,7 +78,7 @@ export function CalculatePanel({ periodId, hasResults }: { periodId: string; has
   const [state, action] = useActionState<CalcState, FormData>(calculatePeriodAction, null);
 
   return (
-    <section aria-labelledby="calc-title" className="space-y-4 rounded-md border border-line bg-surface p-4">
+    <section aria-labelledby="calc-title" className="space-y-4 rounded-xl border border-line/60 bg-surface shadow-card p-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 id="calc-title" className="font-semibold text-navy">

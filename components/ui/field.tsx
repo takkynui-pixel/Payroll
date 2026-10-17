@@ -1,10 +1,10 @@
 import type { ReactNode } from "react";
 
 export const inputClass =
-  "h-10 w-full rounded-md border border-line bg-surface px-3 text-sm text-navy placeholder:text-muted/70 focus-visible:border-brand";
+  "h-10 w-full rounded-lg border border-line bg-surface px-3 text-sm text-navy placeholder:text-muted/70 focus-visible:border-brand";
 
 export const textareaClass =
-  "min-h-20 w-full rounded-md border border-line bg-surface px-3 py-2 text-sm text-navy placeholder:text-muted/70 focus-visible:border-brand";
+  "min-h-20 w-full rounded-lg border border-line bg-surface px-3 py-2 text-sm text-navy placeholder:text-muted/70 focus-visible:border-brand";
 
 export function Field({
   label,
@@ -32,7 +32,7 @@ export function Field({
 export function FormError({ message }: { message?: string }) {
   if (!message) return null;
   return (
-    <p role="alert" className="rounded-md border border-danger/30 bg-danger/5 px-3 py-2 text-sm text-danger">
+    <p role="alert" className="rounded-lg border border-danger/30 bg-danger/5 px-3 py-2 text-sm text-danger">
       {message}
     </p>
   );

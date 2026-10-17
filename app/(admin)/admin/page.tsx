@@ -3,6 +3,8 @@ import type { Metadata } from "next";
 import { EmptyState, PageHeader } from "@/components/page-header";
 import { buttonClass } from "@/components/ui/button";
 import { FormError } from "@/components/ui/field";
+import { NavIcon } from "@/components/nav-icons";
+import { StatCard } from "@/components/stat-card";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { tableClass, tableWrap, tdClass, thClass, trClass } from "@/components/ui/table-styles";
 import { formatDateTh } from "@/lib/format";
@@ -33,9 +35,9 @@ export default async function AdminHome() {
   const periods = openPeriods.data ?? [];
 
   const stats = [
-    { label: "บริษัทลูกค้า", value: (companies.data?.length ?? 0).toLocaleString("th-TH") },
-    { label: "พนักงานที่ทำงานอยู่", value: (employees.count ?? 0).toLocaleString("th-TH") },
-    { label: "งวดที่ยังไม่ปิด", value: periods.length.toLocaleString("th-TH") },
+    { label: "บริษัทลูกค้า", value: (companies.data?.length ?? 0).toLocaleString("th-TH"), tone: "blue" as const, icon: "building" as const },
+    { label: "พนักงานที่ทำงานอยู่", value: (employees.count ?? 0).toLocaleString("th-TH"), tone: "green" as const, icon: "users" as const },
+    { label: "งวดที่ยังไม่ปิด", value: periods.length.toLocaleString("th-TH"), tone: "amber" as const, icon: "payroll" as const },
   ];
 
   return (
@@ -52,12 +54,9 @@ export default async function AdminHome() {
 
       <FormError message={error?.message} />
 
-      <dl className="mb-8 grid grid-cols-1 gap-px overflow-hidden rounded-md border border-line bg-line sm:grid-cols-3">
+      <dl className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-3">
         {stats.map((s) => (
-          <div key={s.label} className="bg-surface px-4 py-3">
-            <dt className="text-xs text-muted">{s.label}</dt>
-            <dd className="num mt-0.5 !text-left text-2xl font-semibold text-navy">{s.value}</dd>
-          </div>
+          <StatCard key={s.label} label={s.label} value={s.value} tone={s.tone} icon={<NavIcon name={s.icon} />} large />
         ))}
       </dl>
 

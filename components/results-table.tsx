@@ -5,7 +5,7 @@ const th = "border-b border-line px-3 py-2 text-xs font-medium text-muted";
 
 export function ResultsTable({ rows, totals }: { rows: ResultRow[]; totals: ResultTotals }) {
   return (
-    <div className="overflow-x-auto rounded-md border border-line bg-surface">
+    <div className="overflow-x-auto rounded-xl border border-line/60 bg-surface shadow-card">
       <table className="w-full min-w-[720px] border-collapse text-sm">
         <caption className="sr-only">ผลคำนวณเงินเดือนรายพนักงาน</caption>
         <thead>
