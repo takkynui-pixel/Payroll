@@ -48,7 +48,38 @@ export default async function UsersPage() {
           {rows.length === 0 && !error ? (
             <EmptyState title="ยังไม่มีสิทธิ์ที่กำหนดไว้" />
           ) : (
-            <div className={tableWrap}>
+            <>
+            <ul className="space-y-3 md:hidden">
+              {rows.map((r) => {
+                const own = r.user_id === session.userId;
+                return (
+                  <li key={`m-${r.kind}-${r.ref_id}`} className="rounded-2xl border border-line bg-surface p-4 shadow-card">
+                    <p className="break-all font-medium text-ink">
+                      {r.email ?? "-"}
+                      {own ? <span className="ml-2 text-xs font-normal text-muted">(คุณ)</span> : null}
+                    </p>
+                    <p className="mt-1 text-sm text-brand-deep">{ROLE_LABEL[r.role] ?? r.role}</p>
+                    <dl className="mt-3 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-sm">
+                      <dt className="text-muted">บริษัท</dt>
+                      <dd className="min-w-0 break-words text-ink">
+                        {r.kind === "employee" ? `${r.display_name} · ` : ""}
+                        {r.company_name ?? "ทุกบริษัท"}
+                      </dd>
+                      <dt className="text-muted">ล็อกอินล่าสุด</dt>
+                      <dd className="text-ink">{r.last_sign_in_at ? formatDateTh(r.last_sign_in_at.slice(0, 10)) : "ยังไม่เคย"}</dd>
+                      <dt className="text-muted">สถานะ</dt>
+                      <dd className="text-ink">{r.is_active ? "ใช้งานอยู่" : "ถูกระงับ"}</dd>
+                    </dl>
+                    {own && r.kind === "member" ? null : (
+                      <div className="mt-3 border-t border-line pt-3">
+                        <RowActions kind={r.kind === "employee" ? "employee" : "member"} id={r.ref_id} isActive={r.is_active} />
+                      </div>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+            <div className={`${tableWrap} hidden md:block`}>
               <table className={tableClass}>
                 <caption className="sr-only">รายการผู้ใช้และสิทธิ์</caption>
                 <thead>
@@ -90,6 +121,7 @@ export default async function UsersPage() {
                 </tbody>
               </table>
             </div>
+            </>
           )}
         </div>
         <div className="space-y-6">

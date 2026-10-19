@@ -122,7 +122,17 @@ export function ShellFrame({
                 <div className="absolute right-0 top-full z-50 mt-2 w-64 rounded-2xl border border-line bg-surface p-2 shadow-lg">
                   <p className="truncate px-3 py-2 text-xs text-muted">{email}</p>
                   <p className="px-3 pb-2 text-xs font-medium text-ink">{portal}</p>
-                  <div className="border-t border-line pt-1">{signOut}</div>
+                  <div className="border-t border-line pt-1">
+                    <Link
+                      href="/account"
+                      onClick={() => setMenu(false)}
+                      className="flex min-h-11 w-full items-center gap-2 rounded-xl px-3 text-sm text-ink hover:bg-page"
+                    >
+                      <NavIcon name="shield" className="size-4" />
+                      เปลี่ยนรหัสผ่าน
+                    </Link>
+                    {signOut}
+                  </div>
                 </div>
               ) : null}
             </div>
@@ -152,7 +162,7 @@ export function ShellFrame({
         <NavLinks items={nav} onNavigate={() => setOpen(false)} />
       </aside>
 
-      <main className="mx-auto w-full max-w-[1400px] px-4 py-6 sm:px-8 sm:py-8">{children}</main>
+      <main className="mx-auto w-full min-w-0 max-w-[1400px] overflow-x-clip px-4 py-6 sm:px-8 sm:py-8">{children}</main>
     </div>
   );
 }

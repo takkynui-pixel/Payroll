@@ -1,10 +1,10 @@
 import type { ReactNode } from "react";
 
 export const inputClass =
-  "h-10 w-full rounded-lg border border-line bg-surface px-3 text-sm text-ink placeholder:text-muted/70 focus-visible:border-brand";
+  "h-10 w-full min-w-0 max-w-full rounded-lg border border-line bg-surface px-3 text-sm text-ink placeholder:text-muted/70 focus-visible:border-brand";
 
 export const textareaClass =
-  "min-h-20 w-full rounded-lg border border-line bg-surface px-3 py-2 text-sm text-ink placeholder:text-muted/70 focus-visible:border-brand";
+  "min-h-20 w-full min-w-0 max-w-full rounded-lg border border-line bg-surface px-3 py-2 text-sm text-ink placeholder:text-muted/70 focus-visible:border-brand";
 
 export function Field({
   label,

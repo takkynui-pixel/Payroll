@@ -45,6 +45,8 @@
 
 html {
   font-family: var(--font-sans);
+  max-width: 100%;
+  overflow-x: clip;
 }
 
 body {
