@@ -6,6 +6,7 @@ export const ADMIN_NAV: NavItem[] = [
   { href: "/admin/companies", label: "บริษัทลูกค้า", icon: "building" },
   { href: "/admin/employees", label: "พนักงาน", icon: "users" },
   { href: "/admin/payroll", label: "งวดเงินเดือน", icon: "payroll" },
+  { href: "/admin/tax", label: "ภ.ง.ด.", icon: "doc" },
   { href: "/admin/import", label: "นำเข้าข้อมูล", icon: "upload" },
   { href: "/admin/users", label: "ผู้ใช้และสิทธิ์", icon: "shield", onlyRole: "super_admin" },
 ];

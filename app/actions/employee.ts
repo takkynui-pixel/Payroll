@@ -80,6 +80,7 @@ const updateSchema = z.object({
   last_name: text(200, "นามสกุล").min(1, "กรอกนามสกุล"),
   email: optionalText(254, "อีเมล").refine((v) => v === null || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v), "รูปแบบอีเมลไม่ถูกต้อง"),
   phone: optionalText(30, "โทรศัพท์"),
+  address: optionalText(500, "ที่อยู่"),
   bank_code: optionalText(30, "ธนาคาร"),
   bank_account_no: optionalText(30, "เลขบัญชี").transform((v) => (v ? v.replace(/[\s-]/g, "") : v)),
   hire_date: z.iso.date("ระบุวันที่เริ่มงาน"),

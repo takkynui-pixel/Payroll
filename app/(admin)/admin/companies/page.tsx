@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { Metadata } from "next";
 import { EmptyState, PageHeader } from "@/components/page-header";
 import { FormError } from "@/components/ui/field";
@@ -49,7 +50,11 @@ export default async function CompaniesPage() {
                 <tbody>
                   {companies.map((c) => (
                     <tr key={c.id} className={trClass}>
-                      <td className={`${tdClass} font-medium`}>{c.name}</td>
+                      <td className={`${tdClass} font-medium`}>
+                        <Link href={`/admin/companies/${c.id}`} className="text-brand hover:underline">
+                          {c.name}
+                        </Link>
+                      </td>
                       <td className={`${tdClass} text-muted`}>{c.tax_id ?? "-"}</td>
                       <td className={tdClass}>{PAY_CYCLE[c.pay_cycle_type] ?? c.pay_cycle_type}</td>
                       <td className={tdClass}>{c.is_active ? "ใช้งานอยู่" : "ปิดใช้งาน"}</td>

@@ -135,6 +135,7 @@ export interface EmployeeValues {
   last_name: string;
   email: string | null;
   phone: string | null;
+  address: string | null;
   bank_code: string | null;
   bank_account_no: string | null;
   hire_date: string;
@@ -187,6 +188,11 @@ export function EditEmployeeForm({ employee }: { employee: EmployeeValues }) {
         <Field label="โทรศัพท์" htmlFor="u-phone">
           <input id="u-phone" name="phone" maxLength={30} defaultValue={employee.phone ?? ""} className={inputClass} />
         </Field>
+        <div className="sm:col-span-2">
+          <Field label="ที่อยู่ (ใช้ในใบแนบ ภ.ง.ด.1ก)" htmlFor="u-address" hint="เลขที่ ตรอก/ซอย ถนน ตำบล อำเภอ จังหวัด รหัสไปรษณีย์">
+            <input id="u-address" name="address" maxLength={500} defaultValue={employee.address ?? ""} className={inputClass} />
+          </Field>
+        </div>
       </div>
       <FormError message={state.error} />
       <Saved state={state} text="บันทึกแล้ว" />
