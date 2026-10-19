@@ -26,7 +26,7 @@ export function PeriodForm({ companies }: { companies: { id: string; name: strin
       <Field label="ชื่องวด" htmlFor="period_name" hint="เช่น งวดประจำเดือน ตุลาคม 2569">
         <input id="period_name" name="period_name" required maxLength={120} className={inputClass} />
       </Field>
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <Field label="วันเริ่มงวด" htmlFor="start_date">
           <input id="start_date" name="start_date" type="date" required className={inputClass} />
         </Field>

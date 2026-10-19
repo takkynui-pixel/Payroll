@@ -26,7 +26,7 @@ export function AddMemberForm({ companies }: { companies: CompanyOption[] }) {
 
   return (
     <form ref={formRef} action={action} className="space-y-4 rounded-2xl border border-line bg-surface shadow-card p-4">
-      <h2 className="font-semibold text-ink">ให้สิทธิ์ผู้ใช้</h2>
+      <h2 className="font-semibold text-brand-deep">ให้สิทธิ์ผู้ใช้</h2>
       <Field label="อีเมลของบัญชี" htmlFor="m-email" hint="ต้องมีบัญชีใน Supabase Authentication อยู่แล้ว">
         <input id="m-email" name="email" type="email" required maxLength={254} autoComplete="off" className={inputClass} />
       </Field>
@@ -74,7 +74,7 @@ export function LinkEmployeeForm({ companies }: { companies: CompanyOption[] }) 
 
   return (
     <form ref={formRef} action={action} className="space-y-4 rounded-2xl border border-line bg-surface shadow-card p-4">
-      <h2 className="font-semibold text-ink">ผูกบัญชีกับพนักงาน</h2>
+      <h2 className="font-semibold text-brand-deep">ผูกบัญชีกับพนักงาน</h2>
       <p className="text-xs text-muted">ให้พนักงานล็อกอินดูสลิปของตัวเอง (เห็นเฉพาะงวดที่อนุมัติแล้ว)</p>
       <Field label="บริษัท" htmlFor="l-company">
         <select id="l-company" name="company" required defaultValue="" className={inputClass}>

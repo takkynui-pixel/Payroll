@@ -135,18 +135,20 @@ export function ShellFrame({
           type="button"
           aria-label="ปิดเมนู"
           onClick={() => setOpen(false)}
-          className="no-print fixed inset-0 z-40 bg-ink/40 lg:hidden"
+          className="no-print fixed inset-0 z-40 bg-brand-deep/50 lg:hidden"
         />
       ) : null}
       <aside
         id="drawer"
         aria-hidden={!open}
-        className={`no-print fixed inset-y-0 left-0 z-50 flex w-72 max-w-[85vw] flex-col gap-4 overflow-y-auto bg-surface px-4 py-5 shadow-xl transition-transform lg:hidden ${
+        className={`no-print fixed inset-y-0 left-0 z-50 flex w-72 max-w-[85vw] flex-col gap-4 overflow-y-auto bg-brand-deep px-4 py-5 shadow-xl transition-transform lg:hidden ${
           open ? "translate-x-0" : "-translate-x-full invisible"
         }`}
       >
-        <Image src="/brand/vta-logo.png" alt="VTA Service" width={720} height={217} className="h-9 w-auto self-start" />
-        <p className="px-3 text-xs font-semibold text-muted">{portal}</p>
+        <div className="self-start rounded-xl bg-white px-3 py-2">
+          <Image src="/brand/vta-logo.png" alt="VTA Service" width={720} height={217} className="h-8 w-auto" />
+        </div>
+        <p className="px-3 text-xs font-semibold text-white/70">{portal}</p>
         <NavLinks items={nav} onNavigate={() => setOpen(false)} />
       </aside>
 

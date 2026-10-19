@@ -17,7 +17,7 @@ export function Card({
     <section className={cn("min-w-0 rounded-2xl border border-line bg-surface p-5 shadow-card", className)}>
       {title || action ? (
         <header className="mb-4 flex flex-wrap items-center justify-between gap-2">
-          {title ? <h2 className="font-semibold text-ink">{title}</h2> : <span />}
+          {title ? <h2 className="font-semibold text-brand-deep">{title}</h2> : <span />}
           {action}
         </header>
       ) : null}

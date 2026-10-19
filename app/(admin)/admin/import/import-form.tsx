@@ -106,7 +106,7 @@ export function ImportForm({
         ) : null}
 
         {state && state.summary.length > 0 ? (
-          <dl className="grid gap-x-6 gap-y-1 rounded-md bg-mist px-3 py-2 text-sm sm:grid-cols-[auto_1fr]">
+          <dl className="grid grid-cols-1 gap-x-6 gap-y-1 rounded-md bg-mist px-3 py-2 text-sm sm:grid-cols-[auto_1fr]">
             {state.summary.map((s) => (
               <div key={s.label} className="contents">
                 <dt className="text-muted">{s.label}</dt>

@@ -41,7 +41,7 @@ export default async function ImportPage({
         description="ดาวน์โหลดแม่แบบ กรอกข้อมูล แล้วอัปโหลดเพื่อตรวจก่อนบันทึก ถ้ามีแถวผิด ระบบจะไม่บันทึกเลยแม้แต่แถวเดียว"
       />
       <FormError message={companies.error?.message ?? periods.error?.message} />
-      <div className="grid gap-6 xl:grid-cols-2">
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
         <ImportForm
           kind="timesheets"
           title="เวลาทำงานและรายการเพิ่ม-หักของงวด"

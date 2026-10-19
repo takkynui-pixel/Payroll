@@ -24,7 +24,7 @@ function SalaryFields({
 }) {
   return (
     <>
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <Field label="ประเภทการจ่าย" htmlFor={`${prefix}-pay`}>
           <select id={`${prefix}-pay`} name="pay_type" defaultValue={defaults?.pay_type ?? "monthly"} className={inputClass}>
             <option value="monthly">รายเดือน</option>
@@ -72,7 +72,7 @@ export function AddEmployeeForm({ companies, defaultCompany }: { companies: Comp
     <form action={action} className="max-w-3xl space-y-6 rounded-2xl border border-line bg-surface shadow-card p-4">
       <fieldset className="space-y-4">
         <legend className="font-semibold text-ink">ข้อมูลพนักงาน</legend>
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <Field label="บริษัท" htmlFor="e-company">
             <select id="e-company" name="company_id" required defaultValue={defaultCompany ?? ""} className={inputClass}>
               <option value="" disabled>
@@ -146,9 +146,9 @@ export function EditEmployeeForm({ employee }: { employee: EmployeeValues }) {
   const [state, action] = useActionState<ActionState, FormData>(updateEmployeeAction, {});
   return (
     <form action={action} className="space-y-4 rounded-2xl border border-line bg-surface shadow-card p-4">
-      <h2 className="font-semibold text-ink">ข้อมูลพนักงาน</h2>
+      <h2 className="font-semibold text-brand-deep">ข้อมูลพนักงาน</h2>
       <input type="hidden" name="employeeId" value={employee.id} />
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <Field label="คำนำหน้า" htmlFor="u-title">
           <input id="u-title" name="title" maxLength={30} defaultValue={employee.title ?? ""} className={inputClass} />
         </Field>
@@ -205,13 +205,13 @@ export function ChangeSalaryForm({
   const [state, action] = useActionState<ActionState, FormData>(changeSalaryAction, {});
   return (
     <form action={action} className="space-y-4 rounded-2xl border border-line bg-surface shadow-card p-4">
-      <h2 className="font-semibold text-ink">ปรับเงินเดือน / เปลี่ยนเงื่อนไข</h2>
+      <h2 className="font-semibold text-brand-deep">ปรับเงินเดือน / เปลี่ยนเงื่อนไข</h2>
       <p className="text-xs text-muted">
         ระบบจะปิดโครงสร้างปัจจุบันในวันก่อนวันที่มีผล แล้วเพิ่มโครงสร้างใหม่ ประวัติเดิมไม่ถูกลบ งวดที่คำนวณไปแล้วไม่เปลี่ยนจนกว่าจะคำนวณใหม่
       </p>
       <input type="hidden" name="employeeId" value={employeeId} />
       <SalaryFields prefix="s" defaults={current} />
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <Field label="มีผลตั้งแต่วันที่" htmlFor="s-eff">
           <input id="s-eff" name="effective_date" type="date" required className={inputClass} />
         </Field>

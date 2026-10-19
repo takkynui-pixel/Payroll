@@ -20,7 +20,7 @@ interface Line {
 function Section({ title, lines, total, totalLabel }: { title: string; lines: Line[]; total: number; totalLabel: string }) {
   return (
     <section className="rounded-2xl border border-line bg-surface shadow-card">
-      <h2 className="border-b border-line px-4 py-2.5 font-semibold text-ink">{title}</h2>
+      <h2 className="border-b border-line px-4 py-2.5 font-semibold text-brand-deep">{title}</h2>
       <dl className="divide-y divide-line/70">
         {lines.length === 0 ? (
           <p className="px-4 py-3 text-sm text-muted">ไม่มีรายการ</p>

@@ -42,11 +42,11 @@ export function NavLinks({
                   "flex min-h-11 items-center gap-2 whitespace-nowrap rounded-full px-4 text-sm transition-colors",
                   variant === "tabs"
                     ? active
-                      ? "border border-line bg-surface font-medium text-accent shadow-card"
+                      ? "border border-brand bg-brand font-medium text-white"
                       : "border border-transparent text-muted hover:text-ink"
                     : active
-                      ? "bg-ink font-semibold text-white"
-                      : "text-ink hover:bg-page",
+                      ? "bg-white font-semibold text-brand-deep"
+                      : "text-white/85 hover:bg-white/10",
                 )}
               >
                 {variant === "list" ? <NavIcon name={item.icon ?? "doc"} /> : null}

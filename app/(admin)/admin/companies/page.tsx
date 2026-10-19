@@ -22,7 +22,7 @@ export default async function CompaniesPage() {
     <>
       <PageHeader title="บริษัทลูกค้า" description="บริษัทที่ VTA Service ดูแลงานเงินเดือนให้" />
       <FormError message={error?.message} />
-      <div className="grid gap-6 lg:grid-cols-[1fr_22rem]">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
         <div>
           {companies.length === 0 ? (
             <EmptyState title="ยังไม่มีบริษัทลูกค้า">เพิ่มบริษัทแรกได้จากฟอร์มด้านข้าง</EmptyState>

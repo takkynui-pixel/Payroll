@@ -43,7 +43,7 @@ export default async function UsersPage() {
         description="สร้างบัญชีล็อกอินที่ Supabase Dashboard (Authentication → Users) ก่อน แล้วมากำหนดบทบาทที่นี่ ทุกการเปลี่ยนแปลงถูกบันทึกใน audit log"
       />
       <FormError message={error?.message.includes("list_access") ? "ยังไม่ได้ apply migration 004 (ฟังก์ชัน list_access ยังไม่มี)" : error?.message} />
-      <div className="grid gap-6 lg:grid-cols-[1fr_22rem]">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
         <div>
           {rows.length === 0 && !error ? (
             <EmptyState title="ยังไม่มีสิทธิ์ที่กำหนดไว้" />

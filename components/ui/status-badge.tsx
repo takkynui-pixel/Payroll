@@ -6,7 +6,7 @@ const TONES = {
   blue: { chip: "bg-[#e6f0ff] text-[#1d4ed8]", dot: "bg-accent" },
   amber: { chip: "bg-[#fff3d6] text-[#7a4a00]", dot: "bg-[#e0a21b]" },
   green: { chip: "bg-[#e0f5ea] text-[#12603a]", dot: "bg-[#2e9e66]" },
-  dark: { chip: "bg-ink text-white", dot: "bg-white" },
+  dark: { chip: "bg-brand-deep text-white", dot: "bg-white" },
 } as const;
 
 /** ป้ายสถานะแบบมีจุดสี (สีไม่ใช่สิ่งเดียวที่สื่อความหมาย เพราะมีข้อความกำกับเสมอ) */

@@ -77,8 +77,8 @@ export function TrendChart({ data, unit = "บาท" }: { data: TrendPoint[]; u
       <svg viewBox={`0 0 ${W} ${H}`} className="h-auto w-full" role="img" aria-label={`กราฟแนวโน้มยอดจ่ายสุทธิ ${pts.length} งวดล่าสุด`}>
         <defs>
           <linearGradient id={gid} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.28" />
-            <stop offset="100%" stopColor="#3b82f6" stopOpacity="0" />
+            <stop offset="0%" stopColor="#1565c0" stopOpacity="0.28" />
+            <stop offset="100%" stopColor="#1565c0" stopOpacity="0" />
           </linearGradient>
         </defs>
         {[0, 0.5, 1].map((t) => (
@@ -90,7 +90,7 @@ export function TrendChart({ data, unit = "บาท" }: { data: TrendPoint[]; u
           </g>
         ))}
         <path d={area} fill={`url(#${gid})`} />
-        <path d={line} fill="none" stroke="#3b82f6" strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round" />
+        <path d={line} fill="none" stroke="#1565c0" strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round" />
         {pts.map((p, i) => (
           <g key={p.label + i}>
             <text x={x(i)} y={H - 8} textAnchor="middle" fontSize="13" fill="#5f7189">
@@ -98,8 +98,8 @@ export function TrendChart({ data, unit = "บาท" }: { data: TrendPoint[]; u
             </text>
             {i === active ? (
               <>
-                <line x1={x(i)} x2={x(i)} y1={pad.t} y2={H - pad.b} stroke="#3b82f6" strokeOpacity="0.35" strokeDasharray="3 3" />
-                <circle cx={x(i)} cy={y(p.value)} r="5" fill="#fff" stroke="#3b82f6" strokeWidth="2.5" />
+                <line x1={x(i)} x2={x(i)} y1={pad.t} y2={H - pad.b} stroke="#1565c0" strokeOpacity="0.35" strokeDasharray="3 3" />
+                <circle cx={x(i)} cy={y(p.value)} r="5" fill="#fff" stroke="#1565c0" strokeWidth="2.5" />
               </>
             ) : null}
             <rect

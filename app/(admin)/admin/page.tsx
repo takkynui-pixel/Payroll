@@ -89,7 +89,7 @@ export default async function AdminHome() {
       />
       <FormError message={error?.message} />
 
-      <div className="grid gap-4 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
         <div className="grid min-w-0 gap-4 lg:col-span-2">
           <Card title="ยอดจ่ายสุทธิงวดล่าสุด">
             {latestT ? (
@@ -169,7 +169,7 @@ export default async function AdminHome() {
             <dl className="mb-4 grid grid-cols-3 gap-3">
               {[
                 { l: "รายได้รวม", v: latestT?.earnings ?? 0, c: "border-accent" },
-                { l: "รายการหัก", v: latestT?.deductions ?? 0, c: "border-ink" },
+                { l: "รายการหัก", v: latestT?.deductions ?? 0, c: "border-brand-deep" },
                 { l: "จ่ายสุทธิ", v: latestT?.net ?? 0, c: "border-sky" },
               ].map((x) => (
                 <div key={x.l} className={`min-w-0 border-l-2 pl-2 ${x.c}`}>
@@ -185,8 +185,8 @@ export default async function AdminHome() {
               center={`${pct}%`}
               centerLabel="จ่ายสุทธิต่อรายได้"
               slices={[
-                { label: "จ่ายสุทธิ", value: latestT?.net ?? 0, color: "#3b82f6" },
-                { label: "รายการหัก", value: latestT?.deductions ?? 0, color: "#0b1530" },
+                { label: "จ่ายสุทธิ", value: latestT?.net ?? 0, color: "#1565c0" },
+                { label: "รายการหัก", value: latestT?.deductions ?? 0, color: "#084a94" },
               ]}
             />
           </Card>

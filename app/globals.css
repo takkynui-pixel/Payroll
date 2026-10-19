@@ -6,16 +6,17 @@
  * สีสถานะ (ok / warn / danger) เป็นสีใช้งานเพื่อสื่อความหมาย ไม่ใช่สีแบรนด์
  */
 :root {
-  --navy: #0d2b5e;
-  --brand: #1565c0;
+  --navy: #0d0f14;
+  --brand: #0b63c1;
+  --brand-deep: #084a94;
   --sky: #42a5f5;
   --mist: #eff6ff;
   --page: #ffffff;
   --soft: #f5f7fb;
   --muted: #5f7189;
   --line: #e3e9f2;
-  --ink: #0b1530;
-  --accent: #3b82f6;
+  --ink: #0d0f14;
+  --accent: #0b63c1;
   --surface: #ffffff;
   --ok: #12603a;
   --warn: #7a4a00;
@@ -25,6 +26,7 @@
 @theme inline {
   --color-navy: var(--navy);
   --color-brand: var(--brand);
+  --color-brand-deep: var(--brand-deep);
   --color-sky: var(--sky);
   --color-ink: var(--ink);
   --color-accent: var(--accent);
