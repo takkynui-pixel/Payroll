@@ -68,6 +68,18 @@ export type Database = {
           ss_account_no: string | null;
           tax_id: string | null;
           updated_at: string;
+          branch_no: string | null;
+          addr_building: string | null;
+          addr_moo: string | null;
+          addr_soi: string | null;
+          addr_road: string | null;
+          addr_subdistrict: string | null;
+          addr_district: string | null;
+          addr_province: string | null;
+          addr_postcode: string | null;
+          phone: string | null;
+          signer_name: string | null;
+          signer_position: string | null;
         };
         Insert: {
           address?: string | null;
@@ -80,6 +92,18 @@ export type Database = {
           ss_account_no?: string | null;
           tax_id?: string | null;
           updated_at?: string;
+          branch_no?: string | null;
+          addr_building?: string | null;
+          addr_moo?: string | null;
+          addr_soi?: string | null;
+          addr_road?: string | null;
+          addr_subdistrict?: string | null;
+          addr_district?: string | null;
+          addr_province?: string | null;
+          addr_postcode?: string | null;
+          phone?: string | null;
+          signer_name?: string | null;
+          signer_position?: string | null;
         };
         Update: {
           address?: string | null;
@@ -92,6 +116,18 @@ export type Database = {
           ss_account_no?: string | null;
           tax_id?: string | null;
           updated_at?: string;
+          branch_no?: string | null;
+          addr_building?: string | null;
+          addr_moo?: string | null;
+          addr_soi?: string | null;
+          addr_road?: string | null;
+          addr_subdistrict?: string | null;
+          addr_district?: string | null;
+          addr_province?: string | null;
+          addr_postcode?: string | null;
+          phone?: string | null;
+          signer_name?: string | null;
+          signer_position?: string | null;
         };
         Relationships: [];
       };
@@ -411,6 +447,7 @@ export type Database = {
           title: string | null;
           updated_at: string;
           user_id: string | null;
+          address: string | null;
         };
         Insert: {
           bank_account_no?: string | null;
@@ -431,6 +468,7 @@ export type Database = {
           title?: string | null;
           updated_at?: string;
           user_id?: string | null;
+          address?: string | null;
         };
         Update: {
           bank_account_no?: string | null;
@@ -451,6 +489,7 @@ export type Database = {
           title?: string | null;
           updated_at?: string;
           user_id?: string | null;
+          address?: string | null;
         };
         Relationships: [
           {
@@ -977,48 +1016,6 @@ export type Database = {
       change_payroll_period_status: {
         Args: { p_new_status: string; p_note?: string; p_period: string };
         Returns: Database["public"]["Tables"]["payroll_periods"]["Row"];
-      };
-      /** [PENDING 005] */
-      add_employee_salary: {
-        Args: {
-          p_base: number;
-          p_effective: string;
-          p_employee: string;
-          p_note?: string;
-          p_pay_type: string;
-          p_ss: boolean;
-          p_tax_type: string;
-        };
-        Returns: string;
-      };
-      /** [PENDING 005] */
-      create_employee: {
-        Args: {
-          p_bank_account: string;
-          p_bank_code: string;
-          p_base_salary: number;
-          p_code: string;
-          p_company: string;
-          p_effective?: string;
-          p_email: string;
-          p_first: string;
-          p_hire_date: string;
-          p_id_card?: string;
-          p_last: string;
-          p_pay_type: string;
-          p_phone: string;
-          p_ss: boolean;
-          p_tax_type: string;
-          p_title: string;
-        };
-        Returns: string;
-      };
-      /** [PENDING 005] */
-      import_employees: { Args: { p_company: string; p_file_name: string; p_rows: Json }; Returns: number };
-      /** [PENDING 005] */
-      import_period_data: {
-        Args: { p_adjustments: Json; p_file_name: string; p_period: string; p_timesheets: Json };
-        Returns: Json;
       };
       /** [PENDING 005] */
       change_salary: { Args: { p_employee: string; p_salary: Json }; Returns: string };

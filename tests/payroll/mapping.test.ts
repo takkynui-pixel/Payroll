@@ -26,6 +26,7 @@ const employeeRow = (over: Partial<Tables<"employees">> = {}): Tables<"employees
   last_name: "ใจดี",
   email: null,
   phone: null,
+  address: null,
   id_card_last4: null,
   bank_code: "KBANK",
   bank_account_no: "1234567890",
