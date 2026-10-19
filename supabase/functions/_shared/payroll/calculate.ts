@@ -16,6 +16,7 @@ const EMPTY_TIMESHEET: TimesheetInput = {
   otHours10: 0,
   otHours15: 0,
   otHours20: 0,
+  otHours25: 0,
   otHours30: 0,
   lateMinutes: 0,
   absenceDays: 0,
@@ -33,7 +34,7 @@ function assertNonNegative(label: string, n: number): void {
  * สมมติฐานที่ตั้งไว้ (ทุกข้อเก็บลง snapshot และควรให้ผู้รู้ด้านบัญชีตรวจ):
  *  - รายเดือน: ค่าจ้างรายวัน = เงินเดือน / monthlyDivisor (30)  รายชั่วโมง = รายวัน / hoursPerDay (8)
  *  - รายวัน: จ่ายตามวันทำงานจริง (absence_days ไม่นำมาหักซ้ำ)  รายชั่วโมง: จ่ายตามวันทำงาน x ชั่วโมงต่อวัน
- *  - OT = ค่าจ้างรายชั่วโมง x ชั่วโมง x ตัวคูณ (1.0 / 1.5 / 2.0 / 3.0) ปัดเศษเป็นสตางค์ทีละรายการ
+ *  - OT = ค่าจ้างรายชั่วโมง x ชั่วโมง x ตัวคูณ (1.0 / 1.5 / 2.0 / 2.5 / 3.0) ปัดเศษเป็นสตางค์ทีละรายการ
  *  - ฐานประกันสังคม = ค่าจ้างหลังหักขาด/สาย + รายรับที่ติด is_ss_base (ไม่รวม OT)
  *  - ภาษี: ฐานภาษีงวดนี้ = gross (รวม OT) + รายรับที่ is_taxable
  *  - ไม่คิดเงินเดือนตามสัดส่วนวัน กรณีเริ่มงาน/ลาออกกลางงวด (ยังไม่รองรับ)
@@ -57,6 +58,7 @@ export function calculatePayroll(input: PayrollInput): PayrollOutput {
   assertNonNegative("otHours10", ts.otHours10);
   assertNonNegative("otHours15", ts.otHours15);
   assertNonNegative("otHours20", ts.otHours20);
+  assertNonNegative("otHours25", ts.otHours25);
   assertNonNegative("otHours30", ts.otHours30);
   assertNonNegative("lateMinutes", ts.lateMinutes);
   assertNonNegative("absenceDays", ts.absenceDays);
@@ -100,6 +102,7 @@ export function calculatePayroll(input: PayrollInput): PayrollOutput {
     { code: "ot_1_0", name: "ค่าล่วงเวลา 1.0 เท่า", hours: ts.otHours10, mult: 1.0 },
     { code: "ot_1_5", name: "ค่าล่วงเวลา 1.5 เท่า", hours: ts.otHours15, mult: 1.5 },
     { code: "ot_2_0", name: "ค่าล่วงเวลา 2.0 เท่า", hours: ts.otHours20, mult: 2.0 },
+    { code: "ot_2_5", name: "ค่าล่วงเวลา 2.5 เท่า", hours: ts.otHours25, mult: 2.5 },
     { code: "ot_3_0", name: "ค่าล่วงเวลา 3.0 เท่า", hours: ts.otHours30, mult: 3.0 },
   ].map((l) => ({ ...l, satang: roundHalfUp(hourlyRate * l.hours * l.mult) }));
   const otSatang = otLines.reduce((s, l) => s + l.satang, 0);

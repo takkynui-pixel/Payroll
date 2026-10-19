@@ -334,6 +334,7 @@ export type Database = {
           ot_hours_1_0: number;
           ot_hours_1_5: number;
           ot_hours_2_0: number;
+          ot_hours_2_5: number;
           ot_hours_3_0: number;
           payroll_period_id: string;
           updated_at: string;
@@ -350,6 +351,7 @@ export type Database = {
           ot_hours_1_0?: number;
           ot_hours_1_5?: number;
           ot_hours_2_0?: number;
+          ot_hours_2_5?: number;
           ot_hours_3_0?: number;
           payroll_period_id: string;
           updated_at?: string;
@@ -366,6 +368,7 @@ export type Database = {
           ot_hours_1_0?: number;
           ot_hours_1_5?: number;
           ot_hours_2_0?: number;
+          ot_hours_2_5?: number;
           ot_hours_3_0?: number;
           payroll_period_id?: string;
           updated_at?: string;

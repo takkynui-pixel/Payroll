@@ -76,6 +76,7 @@ export function payrollInput(over: Partial<PayrollInput> = {}): PayrollInput {
       otHours10: 0,
       otHours15: 0,
       otHours20: 0,
+      otHours25: 0,
       otHours30: 0,
       lateMinutes: 0,
       absenceDays: 0,

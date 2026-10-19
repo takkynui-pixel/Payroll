@@ -8,6 +8,7 @@ const ts = (over: Partial<NonNullable<PayrollInput["timesheet"]>>) => ({
   otHours10: 0,
   otHours15: 0,
   otHours20: 0,
+  otHours25: 0,
   otHours30: 0,
   lateMinutes: 0,
   absenceDays: 0,
@@ -120,16 +121,16 @@ describe("ประเภทการจ่าย", () => {
     expect(o.socialSecurityAmount).toBe(800);
   });
 
-  it("OT ทุกตัวคูณ 1.0/1.5/2.0/3.0 (รายเดือน 24,000 -> รายชั่วโมง 100)", () => {
+  it("OT ทุกตัวคูณ 1.0/1.5/2.0/2.5/3.0 (รายเดือน 24,000 -> รายชั่วโมง 100)", () => {
     const o = calculatePayroll(
       payrollInput({
         employee: employee({ baseSalary: 24000, socialSecurityDeduct: false, taxDeductType: "no_tax" }),
-        timesheet: ts({ otHours10: 2, otHours15: 2, otHours20: 2, otHours30: 2 }),
+        timesheet: ts({ otHours10: 2, otHours15: 2, otHours20: 2, otHours25: 2, otHours30: 2 }),
       }),
     );
-    // 200 + 300 + 400 + 600
-    expect(o.otAmount).toBe(1500);
-    expect(o.items.filter((i) => i.code.startsWith("ot_")).map((i) => i.amount)).toEqual([200, 300, 400, 600]);
+    // 200 + 300 + 400 + 500 + 600
+    expect(o.otAmount).toBe(2000);
+    expect(o.items.filter((i) => i.code.startsWith("ot_")).map((i) => i.amount)).toEqual([200, 300, 400, 500, 600]);
   });
 });
 

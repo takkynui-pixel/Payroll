@@ -152,7 +152,7 @@ describe("parseTimesheetWorkbook", () => {
   async function build(ts: (string | number | null)[][], adj?: (string | number | null)[][]) {
     const wb = new ExcelJS.Workbook();
     const a = wb.addWorksheet("เวลาทำงาน");
-    a.addRow(["รหัสพนักงาน *", "วันทำงาน", "OT 1.0", "OT 1.5", "OT 2.0", "OT 3.0", "สาย (นาที)", "ขาด/ลาไม่รับค่าจ้าง (วัน)"]);
+    a.addRow(["รหัสพนักงาน *", "วันทำงาน", "OT 1.0", "OT 1.5", "OT 2.0", "OT 2.5", "OT 3.0", "สาย (นาที)", "ขาด/ลาไม่รับค่าจ้าง (วัน)"]);
     ts.forEach((r) => a.addRow(r));
     if (adj) {
       const b = wb.addWorksheet("รายการเพิ่ม-หัก");
@@ -164,7 +164,7 @@ describe("parseTimesheetWorkbook", () => {
 
   it("อ่านเวลาทำงานและรายการเพิ่ม-หัก ค่าว่างเป็น 0", async () => {
     const wb = await build(
-      [["E1", 26, null, 10.5, null, null, 15, 1]],
+      [["E1", 26, null, 10.5, null, 3, null, 15, 1]],
       [
         ["E1", "รายได้", "ค่ากะ", 70, "ใช่", "ใช่"],
         ["E1", "รายการหัก", "ค่าชุด", 200, "ใช่", "ใช่"],
@@ -173,7 +173,7 @@ describe("parseTimesheetWorkbook", () => {
     const r = parseTimesheetWorkbook(wb);
     expect(r.issues).toEqual([]);
     expect(r.timesheets[0]).toEqual({
-      employee_code: "E1", working_days: 26, ot_hours_1_0: 0, ot_hours_1_5: 10.5, ot_hours_2_0: 0, ot_hours_3_0: 0,
+      employee_code: "E1", working_days: 26, ot_hours_1_0: 0, ot_hours_1_5: 10.5, ot_hours_2_0: 0, ot_hours_2_5: 3, ot_hours_3_0: 0,
       late_minutes: 15, absence_days: 1,
     });
     expect(r.adjustments).toHaveLength(2);
@@ -191,8 +191,8 @@ describe("parseTimesheetWorkbook", () => {
     const r = parseTimesheetWorkbook(
       await build(
         [
-          ["E1", 20, 0, 0, 0, 0, 0, 0],
-          ["E1", -1, 0, 0, 0, 0, 1.5, 0],
+          ["E1", 20, 0, 0, 0, 0, 0, 0, 0],
+          ["E1", -1, 0, 0, 0, 0, 0, 1.5, 0],
         ],
         [["E1", "รายได้", "ค่ากะ", 0, null, null]],
       ),
@@ -207,8 +207,8 @@ describe("parseTimesheetWorkbook", () => {
   it("เซลล์สูตรที่เป็น #N/A ถูกรายงานเป็นข้อผิดพลาดของแถวนั้น", async () => {
     const wb = new ExcelJS.Workbook();
     const a = wb.addWorksheet("เวลาทำงาน");
-    a.addRow(["รหัสพนักงาน *", "วันทำงาน", "OT 1.0", "OT 1.5", "OT 2.0", "OT 3.0", "สาย (นาที)", "ขาด/ลาไม่รับค่าจ้าง (วัน)"]);
-    a.addRow(["E1", { error: "#N/A" } as unknown as ExcelJS.CellValue, 0, 0, 0, 0, 0, 0]);
+    a.addRow(["รหัสพนักงาน *", "วันทำงาน", "OT 1.0", "OT 1.5", "OT 2.0", "OT 2.5", "OT 3.0", "สาย (นาที)", "ขาด/ลาไม่รับค่าจ้าง (วัน)"]);
+    a.addRow(["E1", { error: "#N/A" } as unknown as ExcelJS.CellValue, 0, 0, 0, 0, 0, 0, 0]);
     const r = parseTimesheetWorkbook(await roundTrip(wb));
     expect(r.timesheets).toHaveLength(0);
     expect(r.issues.some((i) => i.row === 2 && i.message.includes("#N/A"))).toBe(true);

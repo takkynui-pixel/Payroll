@@ -47,6 +47,7 @@ export interface TimesheetInput {
   otHours10: number;
   otHours15: number;
   otHours20: number;
+  otHours25: number;
   otHours30: number;
   lateMinutes: number;
   absenceDays: number;

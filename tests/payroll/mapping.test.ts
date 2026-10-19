@@ -64,6 +64,7 @@ const sheetRow = (over: Partial<Tables<"employee_timesheets">> = {}): Tables<"em
   ot_hours_1_0: 0,
   ot_hours_1_5: 4,
   ot_hours_2_0: 0,
+  ot_hours_2_5: 0,
   ot_hours_3_0: 0,
   late_minutes: 0,
   absence_days: 0,
