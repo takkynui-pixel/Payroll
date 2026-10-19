@@ -85,8 +85,8 @@ function employeesTemplate(): ExcelJS.Workbook {
 function timesheetsTemplate(): ExcelJS.Workbook {
   const wb = new ExcelJS.Workbook();
   const ws = wb.addWorksheet(TIMESHEET_SHEET);
-  ws.addRow(["รหัสพนักงาน *", "วันทำงาน", "OT 1.0", "OT 1.5", "OT 2.0", "OT 3.0", "สาย (นาที)", "ขาด/ลาไม่รับค่าจ้าง (วัน)"]);
-  styleHeader(ws, [16, 12, 10, 10, 10, 10, 12, 22], [1]);
+  ws.addRow(["รหัสพนักงาน *", "วันทำงาน", "OT 1.0", "OT 1.5", "OT 2.0", "OT 2.5", "OT 3.0", "สาย (นาที)", "ขาด/ลาไม่รับค่าจ้าง (วัน)"]);
+  styleHeader(ws, [16, 12, 10, 10, 10, 10, 10, 12, 22], [1]);
 
   const wa = wb.addWorksheet(ADJUSTMENT_SHEET);
   wa.addRow(["รหัสพนักงาน *", "ประเภท *", "ชื่อรายการ *", "จำนวนเงิน *", "เสียภาษี", "เป็นฐานประกันสังคม"]);

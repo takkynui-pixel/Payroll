@@ -20,6 +20,7 @@ export const TIMESHEET_COLUMNS: ColumnSpec[] = [
   { key: "ot_hours_1_0", headers: ["OT 1.0", "OT1.0", "ot_hours_1_0"] },
   { key: "ot_hours_1_5", headers: ["OT 1.5", "OT1.5", "ot_hours_1_5"] },
   { key: "ot_hours_2_0", headers: ["OT 2.0", "OT2.0", "ot_hours_2_0"] },
+  { key: "ot_hours_2_5", headers: ["OT 2.5", "OT2.5", "ot_hours_2_5"] },
   { key: "ot_hours_3_0", headers: ["OT 3.0", "OT3.0", "ot_hours_3_0"] },
   { key: "late_minutes", headers: ["สาย (นาที)", "สายนาที", "late_minutes"] },
   { key: "absence_days", headers: ["ขาด/ลาไม่รับค่าจ้าง (วัน)", "ขาดวัน", "absence_days"] },
@@ -49,6 +50,7 @@ export interface TimesheetRow {
   ot_hours_1_0: number;
   ot_hours_1_5: number;
   ot_hours_2_0: number;
+  ot_hours_2_5: number;
   ot_hours_3_0: number;
   late_minutes: number;
   absence_days: number;
@@ -114,6 +116,7 @@ export function parseTimesheetWorkbook(wb: Workbook): ParsedTimesheets {
           ot_hours_1_0: num("OT 1.0", "ot_hours_1_0", 9999),
           ot_hours_1_5: num("OT 1.5", "ot_hours_1_5", 9999),
           ot_hours_2_0: num("OT 2.0", "ot_hours_2_0", 9999),
+          ot_hours_2_5: num("OT 2.5", "ot_hours_2_5", 9999),
           ot_hours_3_0: num("OT 3.0", "ot_hours_3_0", 9999),
           late_minutes: num("สาย (นาที)", "late_minutes", 999_999, true),
           absence_days: num("ขาด/ลาไม่รับค่าจ้าง (วัน)", "absence_days", 366),

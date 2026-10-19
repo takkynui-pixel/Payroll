@@ -157,6 +157,7 @@ export function assemblePayrollInputs(
             otHours10: Number(sheet.ot_hours_1_0),
             otHours15: Number(sheet.ot_hours_1_5),
             otHours20: Number(sheet.ot_hours_2_0),
+            otHours25: Number(sheet.ot_hours_2_5),
             otHours30: Number(sheet.ot_hours_3_0),
             lateMinutes: Number(sheet.late_minutes),
             absenceDays: Number(sheet.absence_days),
