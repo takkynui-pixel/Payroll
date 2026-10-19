@@ -105,7 +105,7 @@ export default async function PeriodDetailPage({ params }: { params: Promise<{ p
         <StatusPanel periodId={periodId} actions={staffActions(period.status)} />
 
         <section aria-labelledby="results-title" className="space-y-3">
-          <h2 id="results-title" className="font-semibold text-navy">
+          <h2 id="results-title" className="font-semibold text-ink">
             ผลคำนวณ
           </h2>
           {rows.length === 0 ? (
@@ -119,7 +119,7 @@ export default async function PeriodDetailPage({ params }: { params: Promise<{ p
         </section>
 
         <section aria-labelledby="history-title" className="space-y-3">
-          <h2 id="history-title" className="font-semibold text-navy">
+          <h2 id="history-title" className="font-semibold text-ink">
             ประวัติการดำเนินการ
           </h2>
           {history.length === 0 ? (

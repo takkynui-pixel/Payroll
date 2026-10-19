@@ -16,8 +16,8 @@ export function CompanyForm() {
   }, [state]);
 
   return (
-    <form ref={formRef} action={action} className="space-y-4 rounded-xl border border-line/60 bg-surface shadow-card p-4">
-      <h2 className="font-semibold text-navy">เพิ่มบริษัทลูกค้า</h2>
+    <form ref={formRef} action={action} className="space-y-4 rounded-2xl border border-line bg-surface shadow-card p-4">
+      <h2 className="font-semibold text-ink">เพิ่มบริษัทลูกค้า</h2>
       <Field label="ชื่อบริษัท" htmlFor="name">
         <input id="name" name="name" required maxLength={200} className={inputClass} />
       </Field>

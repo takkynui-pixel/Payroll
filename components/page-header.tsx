@@ -10,9 +10,9 @@ export function PageHeader({
   action?: ReactNode;
 }) {
   return (
-    <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
+    <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight text-navy">{title}</h1>
+        <h1 className="text-3xl font-semibold tracking-tight text-ink">{title}</h1>
         {description ? <p className="mt-1 max-w-2xl text-sm text-muted">{description}</p> : null}
       </div>
       {action}
@@ -22,8 +22,8 @@ export function PageHeader({
 
 export function EmptyState({ title, children, action }: { title: string; children?: ReactNode; action?: ReactNode }) {
   return (
-    <div className="rounded-xl border border-dashed border-[#a9c3e3] bg-surface px-6 py-10 text-center">
-      <p className="font-medium text-navy">{title}</p>
+    <div className="rounded-2xl border border-dashed border-line bg-surface px-6 py-10 text-center">
+      <p className="font-medium text-ink">{title}</p>
       {children ? <p className="mx-auto mt-1 max-w-md text-sm text-muted">{children}</p> : null}
       {action ? <div className="mt-4 flex justify-center">{action}</div> : null}
     </div>

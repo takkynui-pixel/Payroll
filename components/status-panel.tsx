@@ -23,7 +23,7 @@ function ActionForm({ periodId, action }: { periodId: string; action: WorkflowAc
       <input type="hidden" name="newStatus" value={action.to} />
       {action.requireNote ? (
         <div className="space-y-1.5">
-          <label htmlFor={noteId} className="block text-sm font-medium text-navy">
+          <label htmlFor={noteId} className="block text-sm font-medium text-ink">
             เหตุผล
           </label>
           <textarea
@@ -46,7 +46,7 @@ function ActionForm({ periodId, action }: { periodId: string; action: WorkflowAc
 export function StatusPanel({ periodId, actions }: { periodId: string; actions: WorkflowAction[] }) {
   if (actions.length === 0) return null;
   return (
-    <div className="flex flex-wrap items-start gap-6 rounded-xl border border-line/60 bg-surface shadow-card p-4">
+    <div className="flex flex-wrap items-start gap-6 rounded-2xl border border-line bg-surface shadow-card p-4">
       {actions.map((a) => (
         <ActionForm key={a.to} periodId={periodId} action={a} />
       ))}

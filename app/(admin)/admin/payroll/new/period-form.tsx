@@ -10,7 +10,7 @@ export function PeriodForm({ companies }: { companies: { id: string; name: strin
   const [state, action] = useActionState<ActionState, FormData>(createPeriodAction, {});
 
   return (
-    <form action={action} className="max-w-xl space-y-4 rounded-xl border border-line/60 bg-surface shadow-card p-5">
+    <form action={action} className="max-w-xl space-y-4 rounded-2xl border border-line bg-surface shadow-card p-5">
       <Field label="บริษัท" htmlFor="company_id">
         <select id="company_id" name="company_id" required defaultValue="" className={inputClass}>
           <option value="" disabled>

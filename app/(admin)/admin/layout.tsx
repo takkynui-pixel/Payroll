@@ -13,7 +13,7 @@ const NAV = [
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
   return (
-    <PortalFrame allowed={STAFF_ROLES} portal="ทีม Payroll" nav={NAV}>
+    <PortalFrame allowed={STAFF_ROLES} portal="ทีม Payroll" nav={NAV} noticeHref="/admin/payroll">
       {children}
     </PortalFrame>
   );

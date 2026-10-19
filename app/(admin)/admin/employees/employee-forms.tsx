@@ -52,7 +52,7 @@ function SalaryFields({
             <option value="no_tax">ไม่หักภาษี</option>
           </select>
         </Field>
-        <label className="flex items-center gap-2 self-end pb-2 text-sm font-medium text-navy">
+        <label className="flex items-center gap-2 self-end pb-2 text-sm font-medium text-ink">
           <input type="checkbox" name="social_security_deduct" defaultChecked={defaults?.social_security_deduct ?? true} className="size-4" />
           หักประกันสังคม
         </label>
@@ -69,9 +69,9 @@ export interface CompanyOption {
 export function AddEmployeeForm({ companies, defaultCompany }: { companies: CompanyOption[]; defaultCompany?: string }) {
   const [state, action] = useActionState<ActionState, FormData>(createEmployeeAction, {});
   return (
-    <form action={action} className="max-w-3xl space-y-6 rounded-xl border border-line/60 bg-surface shadow-card p-4">
+    <form action={action} className="max-w-3xl space-y-6 rounded-2xl border border-line bg-surface shadow-card p-4">
       <fieldset className="space-y-4">
-        <legend className="font-semibold text-navy">ข้อมูลพนักงาน</legend>
+        <legend className="font-semibold text-ink">ข้อมูลพนักงาน</legend>
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label="บริษัท" htmlFor="e-company">
             <select id="e-company" name="company_id" required defaultValue={defaultCompany ?? ""} className={inputClass}>
@@ -119,7 +119,7 @@ export function AddEmployeeForm({ companies, defaultCompany }: { companies: Comp
         </div>
       </fieldset>
       <fieldset className="space-y-4">
-        <legend className="font-semibold text-navy">โครงสร้างเงินเดือนแรก (มีผลตั้งแต่วันที่เริ่มงาน)</legend>
+        <legend className="font-semibold text-ink">โครงสร้างเงินเดือนแรก (มีผลตั้งแต่วันที่เริ่มงาน)</legend>
         <SalaryFields prefix="e" />
       </fieldset>
       <FormError message={state.error} />
@@ -145,8 +145,8 @@ export interface EmployeeValues {
 export function EditEmployeeForm({ employee }: { employee: EmployeeValues }) {
   const [state, action] = useActionState<ActionState, FormData>(updateEmployeeAction, {});
   return (
-    <form action={action} className="space-y-4 rounded-xl border border-line/60 bg-surface shadow-card p-4">
-      <h2 className="font-semibold text-navy">ข้อมูลพนักงาน</h2>
+    <form action={action} className="space-y-4 rounded-2xl border border-line bg-surface shadow-card p-4">
+      <h2 className="font-semibold text-ink">ข้อมูลพนักงาน</h2>
       <input type="hidden" name="employeeId" value={employee.id} />
       <div className="grid gap-4 sm:grid-cols-2">
         <Field label="คำนำหน้า" htmlFor="u-title">
@@ -204,8 +204,8 @@ export function ChangeSalaryForm({
 }) {
   const [state, action] = useActionState<ActionState, FormData>(changeSalaryAction, {});
   return (
-    <form action={action} className="space-y-4 rounded-xl border border-line/60 bg-surface shadow-card p-4">
-      <h2 className="font-semibold text-navy">ปรับเงินเดือน / เปลี่ยนเงื่อนไข</h2>
+    <form action={action} className="space-y-4 rounded-2xl border border-line bg-surface shadow-card p-4">
+      <h2 className="font-semibold text-ink">ปรับเงินเดือน / เปลี่ยนเงื่อนไข</h2>
       <p className="text-xs text-muted">
         ระบบจะปิดโครงสร้างปัจจุบันในวันก่อนวันที่มีผล แล้วเพิ่มโครงสร้างใหม่ ประวัติเดิมไม่ถูกลบ งวดที่คำนวณไปแล้วไม่เปลี่ยนจนกว่าจะคำนวณใหม่
       </p>

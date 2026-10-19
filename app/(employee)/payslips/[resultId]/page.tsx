@@ -19,8 +19,8 @@ interface Line {
 
 function Section({ title, lines, total, totalLabel }: { title: string; lines: Line[]; total: number; totalLabel: string }) {
   return (
-    <section className="rounded-xl border border-line/60 bg-surface shadow-card">
-      <h2 className="border-b border-line px-4 py-2.5 font-semibold text-navy">{title}</h2>
+    <section className="rounded-2xl border border-line bg-surface shadow-card">
+      <h2 className="border-b border-line px-4 py-2.5 font-semibold text-ink">{title}</h2>
       <dl className="divide-y divide-line/70">
         {lines.length === 0 ? (
           <p className="px-4 py-3 text-sm text-muted">ไม่มีรายการ</p>
@@ -85,7 +85,7 @@ export default async function PayslipDetailPage({ params }: { params: Promise<{ 
       <FormError message={itemsError?.message} />
 
       <div className="max-w-2xl space-y-4">
-        <div className="rounded-xl border border-line/60 bg-surface shadow-card px-4 py-3 text-sm">
+        <div className="rounded-2xl border border-line bg-surface shadow-card px-4 py-3 text-sm">
           <p className="font-medium">
             {result.employee_code} · {result.employee_name}
           </p>
@@ -99,7 +99,7 @@ export default async function PayslipDetailPage({ params }: { params: Promise<{ 
         <Section title="รายการหัก" lines={deductions} total={sum(deductions)} totalLabel="รวมรายการหัก" />
 
         <div className="flex items-baseline justify-between rounded-md border border-brand bg-surface px-4 py-3">
-          <span className="font-semibold text-navy">เงินได้สุทธิ</span>
+          <span className="font-semibold text-ink">เงินได้สุทธิ</span>
           <span className="num text-2xl font-semibold text-brand">{formatBaht(result.net_salary)}</span>
         </div>
       </div>

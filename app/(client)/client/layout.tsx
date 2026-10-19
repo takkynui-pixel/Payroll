@@ -5,7 +5,7 @@ const NAV = [{ href: "/client", label: "งวดเงินเดือน", i
 
 export default function ClientLayout({ children }: { children: ReactNode }) {
   return (
-    <PortalFrame allowed={["client_hr"]} portal="พอร์ทัลลูกค้า" nav={NAV}>
+    <PortalFrame allowed={["client_hr"]} portal="พอร์ทัลลูกค้า" nav={NAV} noticeHref="/client">
       {children}
     </PortalFrame>
   );

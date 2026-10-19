@@ -59,7 +59,7 @@ export default async function EmployeesPage({
 
       <form method="get" className="mb-4 flex flex-wrap items-end gap-3">
         <div className="space-y-1.5">
-          <label htmlFor="company" className="block text-sm font-medium text-navy">
+          <label htmlFor="company" className="block text-sm font-medium text-ink">
             บริษัท
           </label>
           <select id="company" name="company" defaultValue={companyId ?? ""} className={`${inputClass} min-w-56`}>

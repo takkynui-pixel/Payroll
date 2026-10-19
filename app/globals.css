@@ -10,9 +10,12 @@
   --brand: #1565c0;
   --sky: #42a5f5;
   --mist: #eff6ff;
-  --page: #f2f6fb;
-  --muted: #4b6a8a;
-  --line: #d3e2f4;
+  --page: #ffffff;
+  --soft: #f5f7fb;
+  --muted: #5f7189;
+  --line: #e3e9f2;
+  --ink: #0b1530;
+  --accent: #3b82f6;
   --surface: #ffffff;
   --ok: #12603a;
   --warn: #7a4a00;
@@ -23,9 +26,12 @@
   --color-navy: var(--navy);
   --color-brand: var(--brand);
   --color-sky: var(--sky);
+  --color-ink: var(--ink);
+  --color-accent: var(--accent);
   --color-mist: var(--mist);
   --color-page: var(--page);
-  --shadow-card: 0 1px 2px rgb(13 43 94 / 0.05), 0 6px 20px rgb(13 43 94 / 0.06);
+  --color-soft: var(--soft);
+  --shadow-card: 0 1px 2px rgb(16 24 40 / 0.04);
   --color-muted: var(--muted);
   --color-line: var(--line);
   --color-surface: var(--surface);
@@ -41,7 +47,7 @@ html {
 
 body {
   background: var(--page);
-  color: var(--navy);
+  color: var(--ink);
   line-height: 1.65;
 }
 

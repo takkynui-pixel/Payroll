@@ -71,7 +71,7 @@ export default async function ClientPeriodPage({ params }: { params: Promise<{ p
         <StatusPanel periodId={periodId} actions={clientActions(period.status)} />
 
         <section aria-labelledby="results-title" className="space-y-3">
-          <h2 id="results-title" className="font-semibold text-navy">
+          <h2 id="results-title" className="font-semibold text-ink">
             รายการเงินเดือน
           </h2>
           {rows.length === 0 ? (

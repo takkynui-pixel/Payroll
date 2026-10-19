@@ -81,7 +81,7 @@ export default async function EmployeeDetailPage({ params }: { params: Promise<{
             }
           />
           <section aria-labelledby="salary-history" className="space-y-2">
-            <h2 id="salary-history" className="font-semibold text-navy">
+            <h2 id="salary-history" className="font-semibold text-ink">
               ประวัติโครงสร้างเงินเดือน
             </h2>
             <FormError message={salaryError?.message} />

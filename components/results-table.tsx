@@ -5,7 +5,7 @@ const th = "border-b border-line px-3 py-2 text-xs font-medium text-muted";
 
 export function ResultsTable({ rows, totals }: { rows: ResultRow[]; totals: ResultTotals }) {
   return (
-    <div className="overflow-x-auto rounded-xl border border-line/60 bg-surface shadow-card">
+    <div className="overflow-x-auto rounded-2xl border border-line bg-surface shadow-card">
       <table className="w-full min-w-[720px] border-collapse text-sm">
         <caption className="sr-only">ผลคำนวณเงินเดือนรายพนักงาน</caption>
         <thead>
@@ -35,7 +35,7 @@ export function ResultsTable({ rows, totals }: { rows: ResultRow[]; totals: Resu
         </thead>
         <tbody>
           {rows.map((r) => (
-            <tr key={r.id} className="border-b border-line/70 hover:bg-mist/60">
+            <tr key={r.id} className="border-b border-line/70 hover:bg-soft/60">
               <td className="px-3 py-2 text-muted">{r.employee_code}</td>
               <td className="px-3 py-2">{r.employee_name}</td>
               <td className="num px-3 py-2">{formatBaht(r.total_earnings)}</td>
