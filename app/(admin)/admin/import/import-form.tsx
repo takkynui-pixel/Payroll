@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useRef } from "react";
+import { useActionState, useState } from "react";
 import { importAction, type ImportResult } from "@/app/actions/import";
 import { buttonClass } from "@/components/ui/button";
 import { Field, FormError, inputClass } from "@/components/ui/field";
@@ -31,7 +31,20 @@ export function ImportForm({
   templateHref: string;
 }) {
   const [state, action, pending] = useActionState<ImportResult | null, FormData>(importAction, null);
-  const formRef = useRef<HTMLFormElement>(null);
+  // React ล้างช่องไฟล์หลังส่งฟอร์มทุกครั้ง จึงเก็บไฟล์และบริษัท/งวดที่เลือกไว้ในหน้า
+  // เพื่อให้กด "นำเข้าข้อมูล" ต่อจาก "ตรวจไฟล์" ได้โดยไม่ต้องเลือกไฟล์ซ้ำ
+  const [file, setFile] = useState<File | null>(null);
+  const [target, setTarget] = useState(defaultTarget ?? "");
+  const [previewedKey, setPreviewedKey] = useState<string | null>(null);
+  const currentKey = file ? `${target}|${file.name}|${file.size}|${file.lastModified}` : null;
+  const wrapped = (fd: FormData) => {
+    if (file) fd.set("file", file);
+    fd.set("target", target);
+    if (fd.get("mode") === "preview") setPreviewedKey(currentKey);
+    return action(fd);
+  };
+  // ปุ่มนำเข้าแสดงเมื่อไฟล์และเป้าหมายตรงกับที่เพิ่งตรวจผ่านเท่านั้น
+  const canCommit = state?.stage === "preview" && state.canCommit && currentKey !== null && currentKey === previewedKey;
   const id = `import-${kind}`;
   const issues = state?.issues ?? [];
 
@@ -50,10 +63,10 @@ export function ImportForm({
         </a>
       </p>
 
-      <form ref={formRef} action={action} className="space-y-4">
+      <form action={wrapped} className="space-y-4">
         <input type="hidden" name="kind" value={kind} />
         <Field label={targetLabel} htmlFor={`${id}-target`}>
-          <select id={`${id}-target`} name="target" required defaultValue={defaultTarget ?? ""} className={inputClass}>
+          <select id={`${id}-target`} name="target" required value={target} onChange={(e) => setTarget(e.target.value)} className={inputClass}>
             <option value="" disabled>
               เลือก
             </option>
@@ -69,17 +82,23 @@ export function ImportForm({
             id={`${id}-file`}
             name="file"
             type="file"
-            required
+            required={!file}
+            onChange={(e) => setFile(e.target.files?.[0] ?? null)}
             accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
             className={inputClass + " py-1.5"}
           />
         </Field>
+        {file ? (
+          <p className="text-sm text-muted">
+            ไฟล์ที่เลือก: <span className="font-medium text-ink">{file.name}</span> (ใช้ไฟล์นี้ต่อได้จนกว่าจะเลือกไฟล์ใหม่)
+          </p>
+        ) : null}
 
         <div className="flex flex-wrap gap-2">
           <button type="submit" name="mode" value="preview" disabled={pending} className={buttonClass({ variant: "secondary" })}>
             {pending ? "กำลังตรวจ…" : "ตรวจไฟล์"}
           </button>
-          {state?.stage === "preview" && state.canCommit ? (
+          {canCommit ? (
             <button
               type="submit"
               name="mode"
@@ -116,7 +135,7 @@ export function ImportForm({
           </dl>
         ) : null}
 
-        {state?.stage === "preview" && state.canCommit ? (
+        {canCommit ? (
           <p className="text-sm text-ok">ตรวจผ่านทั้งหมด กด “นำเข้าข้อมูล” เพื่อบันทึก</p>
         ) : null}
 
