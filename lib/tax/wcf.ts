@@ -48,14 +48,15 @@ export function buildWcf(rows: PaidRow[], year: number, payTypes: Map<string, st
     const m = Number(r.payDate.slice(5, 7));
     if (!(m >= 1 && m <= 12)) continue;
     const cell = months[m - 1];
-    const gross = Math.min(r.grossSatang ?? r.incomeSatang, r.incomeSatang);
-    const other = r.incomeSatang - gross;
+    const wage = r.wageSatang ?? r.incomeSatang;
+    const gross = Math.min(r.grossSatang ?? wage, wage);
+    const other = wage - gross;
     if ((payTypes.get(r.employeeId) ?? "monthly") === "monthly") cell.salarySatang += gross;
     else cell.dailySatang += gross;
     cell.otherSatang += other;
-    cell.totalSatang += r.incomeSatang;
+    cell.totalSatang += wage;
     const key = `${m}|${r.employeeId}`;
-    perEmp.set(key, (perEmp.get(key) ?? 0) + r.incomeSatang);
+    perEmp.set(key, (perEmp.get(key) ?? 0) + wage);
   }
   for (const [key, wage] of perEmp) {
     const cell = months[Number(key.split("|")[0]) - 1];

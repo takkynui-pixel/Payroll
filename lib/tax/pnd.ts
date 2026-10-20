@@ -8,10 +8,12 @@ export interface PaidRow {
   employeeName: string;
   /** วันที่จ่ายเงินของงวด YYYY-MM-DD */
   payDate: string;
-  /** เงินได้ที่จ่ายในงวด (สตางค์) */
+  /** เงินได้ที่เสียภาษีที่จ่ายในงวด (สตางค์) ใช้กับ ภ.ง.ด.1/1ก */
   incomeSatang: number;
   /** ภาษีที่หักในงวด (สตางค์) */
   taxSatang: number;
+  /** ค่าจ้างรวมของงวด (total_earnings รวมรายได้ที่ไม่เสียภาษี เช่น ค่ากะ) ใช้กับ กท.20 ก */
+  wageSatang?: number;
   /** เงินเดือน/ค่าจ้างฐานของงวด (สตางค์) ใช้กับ กท.20 ก */
   grossSatang?: number;
 }

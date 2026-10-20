@@ -1,4 +1,5 @@
 import type { Workbook } from "exceljs";
+import { isDhmLayout, parseDhmSheet } from "./timesheets-dhm";
 import {
   mapColumns,
   parseEnum,
@@ -43,17 +44,22 @@ export const ADJUSTMENT_TYPE_MAP = {
   deduction: "deduction",
 } as const;
 
-/** รูปแบบที่ส่งเข้า public.import_timesheets */
+/** 1 วันทำงาน = 8 ชั่วโมง = 480 นาที (ตรงกับ hoursPerDay ของ engine และคอลัมน์คำนวณในฐานข้อมูล) */
+export const MINUTES_PER_DAY = 480;
+
+/** รูปแบบที่ส่งเข้า public.import_timesheets ทุกค่าเป็น "นาที" (จำนวนเต็ม) */
 export interface TimesheetRow {
   employee_code: string;
-  working_days: number;
-  ot_hours_1_0: number;
-  ot_hours_1_5: number;
-  ot_hours_2_0: number;
-  ot_hours_2_5: number;
-  ot_hours_3_0: number;
+  working_minutes: number;
+  absence_minutes: number;
+  leave_unpaid_minutes: number;
   late_minutes: number;
-  absence_days: number;
+  early_leave_minutes: number;
+  ot_minutes_1_0: number;
+  ot_minutes_1_5: number;
+  ot_minutes_2_0: number;
+  ot_minutes_2_5: number;
+  ot_minutes_3_0: number;
 }
 
 export interface AdjustmentRow {
@@ -92,8 +98,30 @@ export function parseTimesheetWorkbook(wb: Workbook): ParsedTimesheets {
   const adjustmentRows: number[] = [];
   let adjustments: AdjustmentRow[] | null = null;
 
-  const ws = wb.getWorksheet(TIMESHEET_SHEET);
-  if (!ws) {
+  const named = wb.getWorksheet(TIMESHEET_SHEET);
+  const dhm = [named, ...wb.worksheets].find((w) => w && isDhmLayout(w));
+  const ws = named ?? dhm;
+  if (dhm) {
+    // แม่แบบแบบ วัน/ชั่วโมง/นาที (2 แถวหัวตาราง): ค่ากะ/ค่ากินในชีตเดียวกันกลายเป็นรายการเพิ่ม
+    const res = parseDhmSheet(dhm, dhm.name);
+    issues.push(...res.issues);
+    warnings.push(...res.warnings);
+    res.rows.forEach((r, i) => {
+      timesheets.push(r as unknown as TimesheetRow);
+      timesheetRows.push(res.rowNumbers[i]);
+    });
+    if (res.hasAllowanceColumns) {
+      adjustments = res.allowances.map((a) => ({
+        employee_code: a.employee_code,
+        adjustment_type: "earning" as const,
+        item_name: a.item_name,
+        amount: a.amount,
+        is_taxable: false,
+        is_ss_base: false,
+      }));
+      res.allowances.forEach((a) => adjustmentRows.push(a.row));
+    }
+  } else if (!ws) {
     issues.push({ sheet: TIMESHEET_SHEET, row: null, message: `ไม่พบชีต "${TIMESHEET_SHEET}" (ใช้แม่แบบที่ดาวน์โหลดจากระบบ)` });
   } else {
     const { cols, missing } = mapColumns(ws, TIMESHEET_COLUMNS);
@@ -111,15 +139,19 @@ export function parseTimesheetWorkbook(wb: Workbook): ParsedTimesheets {
         const code = r.field("รหัสพนักงาน", () => requiredText(r.raw("employee_code"), 50));
         const num = (label: string, key: string, max: number, integer = false) =>
           r.field(label, () => parseNumber(r.raw(key), { min: 0, max, integer }) ?? 0);
+        const days = (v: number | undefined) => Math.round((v ?? 0) * MINUTES_PER_DAY);
+        const hours = (v: number | undefined) => Math.round((v ?? 0) * 60);
         const row = {
-          working_days: num("วันทำงาน", "working_days", 366),
-          ot_hours_1_0: num("OT 1.0", "ot_hours_1_0", 9999),
-          ot_hours_1_5: num("OT 1.5", "ot_hours_1_5", 9999),
-          ot_hours_2_0: num("OT 2.0", "ot_hours_2_0", 9999),
-          ot_hours_2_5: num("OT 2.5", "ot_hours_2_5", 9999),
-          ot_hours_3_0: num("OT 3.0", "ot_hours_3_0", 9999),
-          late_minutes: num("สาย (นาที)", "late_minutes", 999_999, true),
-          absence_days: num("ขาด/ลาไม่รับค่าจ้าง (วัน)", "absence_days", 366),
+          working_minutes: days(num("วันทำงาน", "working_days", 366)),
+          absence_minutes: days(num("ขาด/ลาไม่รับค่าจ้าง (วัน)", "absence_days", 366)),
+          leave_unpaid_minutes: 0,
+          late_minutes: num("สาย (นาที)", "late_minutes", 999_999, true) ?? 0,
+          early_leave_minutes: 0,
+          ot_minutes_1_0: hours(num("OT 1.0", "ot_hours_1_0", 9999)),
+          ot_minutes_1_5: hours(num("OT 1.5", "ot_hours_1_5", 9999)),
+          ot_minutes_2_0: hours(num("OT 2.0", "ot_hours_2_0", 9999)),
+          ot_minutes_2_5: hours(num("OT 2.5", "ot_hours_2_5", 9999)),
+          ot_minutes_3_0: hours(num("OT 3.0", "ot_hours_3_0", 9999)),
         };
         if (code !== undefined) {
           const prev = seen.get(code);
@@ -145,7 +177,7 @@ export function parseTimesheetWorkbook(wb: Workbook): ParsedTimesheets {
     if (missing.length > 0) {
       issues.push({ sheet: ADJUSTMENT_SHEET, row: null, message: `ไม่พบคอลัมน์: ${missing.join(", ")}` });
     } else {
-      adjustments = [];
+      adjustments = adjustments ?? [];
       for (let n = 2; n <= wa.rowCount; n++) {
         const r = new RowReader(wa, cols, n);
         if (isBlankRow(r)) continue;

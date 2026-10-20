@@ -14,6 +14,14 @@ export interface FilingData {
   pendingPeriods: number;
 }
 
+function taxableOf(snapshot: unknown): number | null {
+  if (snapshot && typeof snapshot === "object" && !Array.isArray(snapshot)) {
+    const v = (snapshot as Record<string, unknown>).taxableIncome;
+    if (typeof v === "number" && Number.isFinite(v)) return v;
+  }
+  return null;
+}
+
 const COUNTED = ["approved", "closed"];
 
 /** อ่านผลคำนวณของงวดที่อนุมัติ/ปิดแล้วในปีที่เลือก (ผ่าน RLS ของผู้ใช้) */
@@ -43,7 +51,7 @@ export async function loadFilingData(
   for (let i = 0; i < ids.length; i += 4) {
     const { data, error } = await supabase
       .from("payroll_results")
-      .select("payroll_period_id,employee_id,employee_name,total_earnings,tax_amount,gross_salary")
+      .select("payroll_period_id,employee_id,employee_name,total_earnings,tax_amount,gross_salary,input_snapshot")
       .in("payroll_period_id", ids.slice(i, i + 4))
       .limit(5000);
     if (error) return { error: error.message };
@@ -52,7 +60,9 @@ export async function loadFilingData(
         employeeId: r.employee_id,
         employeeName: r.employee_name,
         payDate: payDate.get(r.payroll_period_id) ?? "",
-        incomeSatang: toSatang(r.total_earnings),
+        // ภ.ง.ด.1/1ก ใช้เงินได้ที่เสียภาษี (ไม่รวมรายได้ที่ยกเว้น เช่น ค่ากะ/ค่ากิน) ถ้าไม่มี snapshot ใช้รายได้รวม
+        incomeSatang: toSatang(taxableOf(r.input_snapshot) ?? r.total_earnings),
+        wageSatang: toSatang(r.total_earnings),
         taxSatang: toSatang(r.tax_amount),
         grossSatang: toSatang(r.gross_salary),
       });

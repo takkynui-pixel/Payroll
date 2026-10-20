@@ -159,7 +159,8 @@ export function assemblePayrollInputs(
             otHours20: Number(sheet.ot_hours_2_0),
             otHours25: Number(sheet.ot_hours_2_5),
             otHours30: Number(sheet.ot_hours_3_0),
-            lateMinutes: Number(sheet.late_minutes),
+            // ออกก่อนเวลาหักเหมือนมาสาย (นาที x อัตราต่อชั่วโมง / 60)
+            lateMinutes: Number(sheet.late_minutes) + Number(sheet.early_leave_minutes),
             absenceDays: Number(sheet.absence_days),
           }
         : null,

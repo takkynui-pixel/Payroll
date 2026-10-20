@@ -173,8 +173,8 @@ describe("parseTimesheetWorkbook", () => {
     const r = parseTimesheetWorkbook(wb);
     expect(r.issues).toEqual([]);
     expect(r.timesheets[0]).toEqual({
-      employee_code: "E1", working_days: 26, ot_hours_1_0: 0, ot_hours_1_5: 10.5, ot_hours_2_0: 0, ot_hours_2_5: 3, ot_hours_3_0: 0,
-      late_minutes: 15, absence_days: 1,
+      employee_code: "E1", working_minutes: 26 * 480, absence_minutes: 480, leave_unpaid_minutes: 0, late_minutes: 15, early_leave_minutes: 0,
+      ot_minutes_1_0: 0, ot_minutes_1_5: 630, ot_minutes_2_0: 0, ot_minutes_2_5: 180, ot_minutes_3_0: 0,
     });
     expect(r.adjustments).toHaveLength(2);
     expect(r.adjustments![0]).toMatchObject({ adjustment_type: "earning", is_taxable: true, is_ss_base: true });
@@ -212,5 +212,70 @@ describe("parseTimesheetWorkbook", () => {
     const r = parseTimesheetWorkbook(await roundTrip(wb));
     expect(r.timesheets).toHaveLength(0);
     expect(r.issues.some((i) => i.row === 2 && i.message.includes("#N/A"))).toBe(true);
+  });
+});
+
+describe("parseTimesheetWorkbook แบบ วัน/ชั่วโมง/นาที (2 แถวหัวตาราง)", () => {
+  // โครงสร้างหัวตารางเหมือนไฟล์จากระบบเวลา (ข้อมูลสมมติ)
+  const HEAD1 = ["ID Emp", "จำนวนวันทำงาน", null, null, null, "ขาดงาน", null, null, null, "ลาหักเงิน", null, null, null, "สาย", null, null, "ออกก่อน", null, null, "ค่า", "ค่า", "OT1.0", null, null, "OT1.5", null, null, "OT2.0", null, null, "OT2.5", null, null, "OT3.0", null, null, "OT4", null, null];
+  const HEAD2 = [null, "Day", "Hr", "min", "Baht", "Day", "Hr", "min", "เงินบาท", "Day", "Hr", "min", "เงินบาท", "Hr", "min", "Baht", "Hr", "min", "Baht", "กะ", "กิน", "Hr", "min", "Baht", "Hr", "min", "Baht", "Hr", "min", "Baht", "Hr", "min", "Baht", "Hr", "min", "Baht", "Hr", "min", "Baht"];
+
+  /** แถวข้อมูลที่เติมค่า 0 แล้วแทนค่าเฉพาะตำแหน่งที่ต้องการ */
+  function dataRow(code: string, set: Record<number, number>): (string | number)[] {
+    const r: (string | number)[] = [code, ...Array<number>(HEAD2.length - 1).fill(0)];
+    for (const [i, v] of Object.entries(set)) r[Number(i)] = v;
+    return r;
+  }
+  async function build(rows: (string | number)[][]) {
+    const wb = new ExcelJS.Workbook();
+    const ws = wb.addWorksheet("Sheet1");
+    ws.addRow(HEAD1);
+    ws.addRow(HEAD2);
+    rows.forEach((r) => ws.addRow(r));
+    return roundTrip(wb);
+  }
+
+  it("แปลง วัน/ชั่วโมง/นาที เป็นนาที และค่ากะ/ค่ากินเป็นรายได้ที่ไม่เสียภาษี ไม่เป็นฐานประกันสังคม", async () => {
+    // 15 วัน 7 ชม., OT1.5 = 47 ชม. 30 นาที, OT2.0 = 16 ชม., OT3.0 = 2 ชม. 30 นาที, ค่ากะ 530
+    const wb = await build([dataRow("T1", { 1: 15, 2: 7, 24: 47, 25: 30, 27: 16, 33: 2, 34: 30, 19: 530 })]);
+    const r = parseTimesheetWorkbook(wb);
+    expect(r.issues).toEqual([]);
+    expect(r.timesheets[0]).toEqual({
+      employee_code: "T1", working_minutes: 15 * 480 + 7 * 60, absence_minutes: 0, leave_unpaid_minutes: 0, late_minutes: 0, early_leave_minutes: 0,
+      ot_minutes_1_0: 0, ot_minutes_1_5: 47 * 60 + 30, ot_minutes_2_0: 960, ot_minutes_2_5: 0, ot_minutes_3_0: 150,
+    });
+    expect(r.adjustments).toEqual([
+      { employee_code: "T1", adjustment_type: "earning", item_name: "ค่ากะ", amount: 530, is_taxable: false, is_ss_base: false },
+    ]);
+    expect(r.timesheetRows).toEqual([3]);
+  });
+
+  it("ลาหักเงิน ออกก่อน สาย แยกเก็บ", async () => {
+    const r = parseTimesheetWorkbook(await build([dataRow("T1", { 1: 20, 9: 1, 10: 2, 11: 15, 13: 0, 14: 10, 16: 1, 17: 5, 20: 40 })]));
+    expect(r.issues).toEqual([]);
+    expect(r.timesheets[0]).toMatchObject({ leave_unpaid_minutes: 480 + 120 + 15, late_minutes: 10, early_leave_minutes: 65 });
+    expect(r.adjustments?.map((a) => a.item_name)).toEqual(["ค่ากิน"]);
+  });
+
+  it("ปฏิเสธเลขทศนิยมในช่องชั่วโมง (เช่น 47.02) และ OT4 ที่ยังไม่รองรับ", async () => {
+    const r = parseTimesheetWorkbook(await build([dataRow("T1", { 1: 20, 24: 47.02, 36: 3 })]));
+    const msgs = r.issues.map((i) => `${i.row}:${i.message}`).join("\n");
+    expect(msgs).toContain("3:OT1.5 (Hr): ต้องเป็นจำนวนเต็ม");
+    expect(msgs).toContain("3:OT4");
+    expect(r.timesheets).toHaveLength(0);
+  });
+
+  it("ข้ามคอลัมน์ Baht และเตือนเมื่อมีค่า, ปฏิเสธรหัสซ้ำ", async () => {
+    const r = parseTimesheetWorkbook(await build([dataRow("T1", { 1: 20, 4: 999 }), dataRow("T1", { 1: 20 })]));
+    expect(r.warnings.some((w) => w.includes("Baht"))).toBe(true);
+    expect(r.issues.some((i) => i.row === 4 && i.message.includes("ซ้ำกับแถว 3"))).toBe(true);
+  });
+
+  it("แม่แบบที่ระบบสร้างอ่านกลับได้ และตัวอย่างไม่ถูกนำเข้า", async () => {
+    const wt = new ExcelJS.Workbook();
+    await wt.xlsx.load((await buildTemplate("timesheets")) as unknown as ArrayBuffer);
+    const t = parseTimesheetWorkbook(wt);
+    expect(t.timesheets).toHaveLength(0);
+    expect(t.issues.map((i) => i.message)).toEqual(["ไม่พบข้อมูลเวลาทำงานในชีต"]);
   });
 });
