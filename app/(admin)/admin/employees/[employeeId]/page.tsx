@@ -9,7 +9,7 @@ import { tableClass, tableWrap, tdClass, thClass, thNumClass, trClass } from "@/
 import { formatBaht, formatDateTh } from "@/lib/format";
 import { employeeDisplayName } from "@/lib/payroll/mapping";
 import { createClient } from "@/lib/supabase/server";
-import { ChangeSalaryForm, EditEmployeeForm } from "../employee-forms";
+import { ChangeSalaryForm, CorrectSalaryForm, EditEmployeeForm } from "../employee-forms";
 
 export const metadata: Metadata = { title: "ข้อมูลพนักงาน" };
 
@@ -80,6 +80,17 @@ export default async function EmployeeDetailPage({ params }: { params: Promise<{
                   }
                 : undefined
             }
+          />
+          <CorrectSalaryForm
+            employeeId={employee.id}
+            items={history.map((s) => ({
+              id: s.id,
+              label: `${formatDateTh(s.effective_date)} ถึง ${s.end_date ? formatDateTh(s.end_date) : "ปัจจุบัน"} · ${PAY_TYPE[s.pay_type] ?? s.pay_type} ${formatBaht(s.base_salary)}`,
+              pay_type: s.pay_type,
+              base_salary: Number(s.base_salary),
+              social_security_deduct: s.social_security_deduct,
+              tax_deduct_type: s.tax_deduct_type,
+            }))}
           />
           <section aria-labelledby="salary-history" className="space-y-2">
             <h2 id="salary-history" className="font-semibold text-ink">

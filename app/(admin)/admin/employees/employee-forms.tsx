@@ -1,7 +1,7 @@
 "use client";
 
-import { useActionState } from "react";
-import { changeSalaryAction, createEmployeeAction, updateEmployeeAction } from "@/app/actions/employee";
+import { useActionState, useState } from "react";
+import { changeSalaryAction, correctSalaryAction, createEmployeeAction, updateEmployeeAction } from "@/app/actions/employee";
 import { SubmitButton } from "@/components/submit-button";
 import { Field, FormError, inputClass } from "@/components/ui/field";
 import type { ActionState } from "@/lib/action-state";
@@ -228,6 +228,50 @@ export function ChangeSalaryForm({
       <FormError message={state.error} />
       <Saved state={state} text="ปรับเงินเดือนแล้ว" />
       <SubmitButton pendingText="กำลังบันทึก…">บันทึกโครงสร้างใหม่</SubmitButton>
+    </form>
+  );
+}
+
+export interface SalaryHistoryItem {
+  id: string;
+  label: string;
+  pay_type: string;
+  base_salary: number;
+  social_security_deduct: boolean;
+  tax_deduct_type: string;
+}
+
+/** แก้ไขแถวเดิมในประวัติโครงสร้างเงินเดือน (ใช้เมื่อบันทึกประเภทการจ่ายหรืออัตราผิดตั้งแต่ต้น) */
+export function CorrectSalaryForm({ employeeId, items }: { employeeId: string; items: SalaryHistoryItem[] }) {
+  const [state, action] = useActionState<ActionState, FormData>(correctSalaryAction, {});
+  const [selected, setSelected] = useState(items[0]?.id ?? "");
+  const item = items.find((i) => i.id === selected);
+  if (items.length === 0) return null;
+  return (
+    <form action={action} className="space-y-4 rounded-2xl border border-line bg-surface shadow-card p-4">
+      <h2 className="font-semibold text-brand-deep">แก้ไขประวัติโครงสร้างเงินเดือน</h2>
+      <p className="text-xs text-muted">
+        ใช้แก้รายการเดิมที่บันทึกผิด เช่น ประเภทการจ่ายหรืออัตรา โดยไม่เปลี่ยนวันที่มีผล ระบบบันทึกผู้แก้และเวลาไว้ใน audit log
+        งวดที่คำนวณไปแล้วไม่เปลี่ยนจนกว่าจะคำนวณใหม่ (งวดที่อนุมัติหรือปิดแล้วต้องเปิดงวดก่อน)
+      </p>
+      <input type="hidden" name="employeeId" value={employeeId} />
+      <input type="hidden" name="salaryId" value={selected} />
+      <Field label="เลือกรายการที่จะแก้" htmlFor="cs-pick">
+        <select id="cs-pick" value={selected} onChange={(e) => setSelected(e.target.value)} className={inputClass}>
+          {items.map((i) => (
+            <option key={i.id} value={i.id}>
+              {i.label}
+            </option>
+          ))}
+        </select>
+      </Field>
+      <SalaryFields key={selected} prefix="cs" defaults={item} />
+      <Field label="หมายเหตุ (เหตุผลที่แก้)" htmlFor="cs-note">
+        <input id="cs-note" name="note" maxLength={300} className={inputClass} />
+      </Field>
+      <FormError message={state.error} />
+      <Saved state={state} text="แก้ไขประวัติแล้ว" />
+      <SubmitButton pendingText="กำลังบันทึก…">บันทึกการแก้ไข</SubmitButton>
     </form>
   );
 }

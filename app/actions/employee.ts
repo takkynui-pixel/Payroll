@@ -136,3 +136,35 @@ export async function changeSalaryAction(_prev: ActionState, formData: FormData)
   revalidatePath(`/admin/employees/${employeeId}`);
   return { ok: true };
 }
+
+const correctSchema = z.object({
+  salaryId: z.uuid(),
+  employeeId: z.uuid(),
+  note: optionalText(300, "หมายเหตุ"),
+  ...salaryFields,
+});
+
+/**
+ * แก้ไขโครงสร้างเงินเดือนแถวเดิมในประวัติ (กรณีบันทึกประเภท/อัตราผิดตั้งแต่ต้น)
+ * ไม่เปลี่ยนวันที่มีผล/วันสิ้นสุด  การแก้ถูกบันทึกใน audit log ของฐานข้อมูล
+ * งวดที่คำนวณไปแล้วไม่เปลี่ยนจนกว่าจะคำนวณใหม่
+ */
+export async function correctSalaryAction(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  await requireRole(STAFF_ROLES);
+  const parsed = correctSchema.safeParse(Object.fromEntries(formData));
+  if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "ข้อมูลไม่ถูกต้อง" };
+  const { salaryId, employeeId, note, ...fields } = parsed.data;
+
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("employee_salaries")
+    .update({ ...fields, ...(note ? { note } : {}) })
+    .eq("id", salaryId)
+    .eq("employee_id", employeeId)
+    .select("id");
+  if (error) return { error: mapDbError(error, "แก้ไขประวัติไม่สำเร็จ") };
+  if (!data || data.length === 0) return { error: "ไม่พบรายการนี้ หรือคุณไม่มีสิทธิ์แก้ไข" };
+
+  revalidatePath(`/admin/employees/${employeeId}`);
+  return { ok: true };
+}
