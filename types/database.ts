@@ -70,6 +70,9 @@ export type Database = {
           updated_at: string;
           branch_no: string | null;
           addr_building: string | null;
+          wcf_account_no: string | null;
+          wcf_business_code: string | null;
+          wcf_rate: number;
           addr_moo: string | null;
           addr_soi: string | null;
           addr_road: string | null;
@@ -94,6 +97,9 @@ export type Database = {
           updated_at?: string;
           branch_no?: string | null;
           addr_building?: string | null;
+          wcf_account_no?: string | null;
+          wcf_business_code?: string | null;
+          wcf_rate?: number;
           addr_moo?: string | null;
           addr_soi?: string | null;
           addr_road?: string | null;
@@ -118,6 +124,9 @@ export type Database = {
           updated_at?: string;
           branch_no?: string | null;
           addr_building?: string | null;
+          wcf_account_no?: string | null;
+          wcf_business_code?: string | null;
+          wcf_rate?: number;
           addr_moo?: string | null;
           addr_soi?: string | null;
           addr_road?: string | null;
