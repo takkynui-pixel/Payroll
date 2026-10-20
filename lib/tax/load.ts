@@ -8,6 +8,8 @@ export interface FilingData {
   company: CompanyRow;
   rows: PaidRow[];
   addresses: Map<string, string | null>;
+  /** ประเภทการจ่ายล่าสุดของพนักงาน (monthly/daily/hourly) */
+  payTypes: Map<string, string>;
   /** งวดในปีที่เลือกซึ่งยังไม่อนุมัติ (ไม่ถูกนับในรายงาน) */
   pendingPeriods: number;
 }
@@ -41,7 +43,7 @@ export async function loadFilingData(
   for (let i = 0; i < ids.length; i += 4) {
     const { data, error } = await supabase
       .from("payroll_results")
-      .select("payroll_period_id,employee_id,employee_name,total_earnings,tax_amount")
+      .select("payroll_period_id,employee_id,employee_name,total_earnings,tax_amount,gross_salary")
       .in("payroll_period_id", ids.slice(i, i + 4))
       .limit(5000);
     if (error) return { error: error.message };
@@ -52,6 +54,7 @@ export async function loadFilingData(
         payDate: payDate.get(r.payroll_period_id) ?? "",
         incomeSatang: toSatang(r.total_earnings),
         taxSatang: toSatang(r.tax_amount),
+        grossSatang: toSatang(r.gross_salary),
       });
     }
   }
@@ -64,7 +67,20 @@ export async function loadFilingData(
     for (const e of data ?? []) addresses.set(e.id, e.address);
   }
 
-  return { company, rows, addresses, pendingPeriods: (periods ?? []).length - counted.length };
+  const payTypes = new Map<string, string>();
+  for (let i = 0; i < empIds.length; i += 100) {
+    const { data, error } = await supabase
+      .from("employee_salaries")
+      .select("employee_id,pay_type,effective_date")
+      .in("employee_id", empIds.slice(i, i + 100))
+      .order("effective_date", { ascending: true })
+      .limit(5000);
+    if (error) return { error: error.message };
+    // เรียงเก่า->ใหม่ แถวหลังสุดทับ = ประเภทการจ่ายล่าสุด
+    for (const e of data ?? []) payTypes.set(e.employee_id, e.pay_type);
+  }
+
+  return { company, rows, addresses, payTypes, pendingPeriods: (periods ?? []).length - counted.length };
 }
 
 /** ถอดรหัสเลขบัตรประชาชนของพนักงานที่อยู่ในรายงาน (ทุกครั้งถูกบันทึกใน audit log โดยฐานข้อมูล) */

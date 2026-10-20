@@ -6,7 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Field, FormError, inputClass } from "@/components/ui/field";
 import { createClient } from "@/lib/supabase/server";
 
-export const metadata: Metadata = { title: "ภ.ง.ด.1 / 1ก" };
+export const metadata: Metadata = { title: "ภ.ง.ด.1 / 1ก / กท.20 ก" };
 
 const MONTHS = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
 
@@ -35,7 +35,7 @@ export default async function TaxPage({ searchParams }: { searchParams: Promise<
   return (
     <>
       <PageHeader
-        title="ภ.ง.ด.1 / ภ.ง.ด.1ก"
+        title="ภ.ง.ด.1 / ภ.ง.ด.1ก / กท.20 ก"
         description="ออกแบบยื่นภาษีเงินได้หัก ณ ที่จ่ายจากผลคำนวณที่อนุมัติหรือปิดงวดแล้ว พิมพ์หรือบันทึกเป็น PDF ได้จากหน้าตัวอย่าง"
       />
       <FormError message={error?.message} />
@@ -101,9 +101,17 @@ export default async function TaxPage({ searchParams }: { searchParams: Promise<
             เปิดตัวอย่างและพิมพ์
           </Link>
         </Card>
+        <Card title="กท.20 ก (กองทุนเงินทดแทน)">
+          <p className="mb-4 text-sm text-muted">
+            แบบคำนวณค่าจ้างประจำปี {year + 543} แยกรายเดือน เงินเดือน ค่าจ้างรายวัน ค่าล่วงเวลา และส่วนที่เกิน 20,000 บาท/เดือน/คน ยื่นภายในเดือนมกราคม {year + 544}
+          </p>
+          <Link href={`/admin/tax/wcf20k?${q.toString()}`} className={buttonClass({ variant: "dark" })}>
+            เปิดตัวอย่างและพิมพ์
+          </Link>
+        </Card>
       </div>
       <p className="mt-4 max-w-3xl text-xs text-muted">
-        หมายเหตุ: การเปิดแบบจะถอดรหัสเลขบัตรประชาชนของพนักงานที่อยู่ในรายงาน และฐานข้อมูลบันทึกทุกครั้งใน audit log
+        หมายเหตุ: การเปิดแบบ ภ.ง.ด.1/1ก จะถอดรหัสเลขบัตรประชาชนของพนักงานที่อยู่ในรายงาน และฐานข้อมูลบันทึกทุกครั้งใน audit log
         ตัวเลขเงินได้ใช้ “รายได้รวม” ของแต่ละงวด ก่อนตรวจกับนักบัญชีว่าตรงกับการแสดงรายการของบริษัทก่อนยื่นจริง
       </p>
     </>

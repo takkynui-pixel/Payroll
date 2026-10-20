@@ -22,6 +22,9 @@ export interface FilingValues {
   phone: string | null;
   signer_name: string | null;
   signer_position: string | null;
+  wcf_account_no: string | null;
+  wcf_business_code: string | null;
+  wcf_rate: number | null;
 }
 
 export function FilingForm({ company }: { company: FilingValues }) {
@@ -51,6 +54,12 @@ export function FilingForm({ company }: { company: FilingValues }) {
         <span className="hidden sm:block" />
         {f("sn", "signer_name", "ชื่อผู้ลงนาม (ผู้จ่ายเงิน)", { maxLength: 150 })}
         {f("sp", "signer_position", "ตำแหน่งผู้ลงนาม", { maxLength: 100 })}
+      </div>
+      <h2 className="font-semibold text-brand-deep">ข้อมูลสำหรับ กท.20 ก (กองทุนเงินทดแทน)</h2>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        {f("wno", "wcf_account_no", "เลขที่บัญชีนายจ้าง", { maxLength: 30 })}
+        {f("wcode", "wcf_business_code", "รหัสกิจการ", { maxLength: 20 })}
+        {f("wrate", "wcf_rate", "อัตราเงินสมทบ (%)", { inputMode: "decimal", maxLength: 6 }, "เช่น 0.20 ถ้ายังไม่ทราบใส่ 0")}
       </div>
       <FormError message={state.error} />
       {state.ok ? (

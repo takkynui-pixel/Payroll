@@ -66,6 +66,9 @@ const filingSchema = z.object({
   phone: optional(30, "โทรศัพท์"),
   signer_name: optional(150, "ชื่อผู้ลงนาม"),
   signer_position: optional(100, "ตำแหน่งผู้ลงนาม"),
+  wcf_account_no: optional(30, "เลขที่บัญชีนายจ้าง"),
+  wcf_business_code: optional(20, "รหัสกิจการ"),
+  wcf_rate: z.coerce.number("อัตราเงินสมทบต้องเป็นตัวเลข").min(0, "อัตราเงินสมทบต้องอยู่ระหว่าง 0-100").max(100, "อัตราเงินสมทบต้องอยู่ระหว่าง 0-100"),
 });
 
 /** บันทึกข้อมูลผู้จ่ายเงินที่ใช้ออกแบบ ภ.ง.ด.1 / 1ก */
@@ -83,7 +86,7 @@ export async function updateCompanyFilingAction(_prev: ActionState, formData: Fo
     .is("deleted_at", null);
   if (error) {
     if (error.code === "23505") return { error: "เลขประจำตัวผู้เสียภาษีนี้มีอยู่ในระบบแล้ว" };
-    if (error.code === "42703") return { error: "ยังไม่ได้รัน migration 007 (ยังไม่มีคอลัมน์ข้อมูลสำหรับ ภ.ง.ด.)" };
+    if (error.code === "42703") return { error: "ยังไม่ได้รัน migration 007 และ 008 (ยังไม่มีคอลัมน์ข้อมูลสำหรับ ภ.ง.ด./กท.20 ก)" };
     return { error: `บันทึกไม่สำเร็จ: ${error.message}` };
   }
   revalidatePath("/admin/companies");

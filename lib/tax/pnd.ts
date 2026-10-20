@@ -12,6 +12,8 @@ export interface PaidRow {
   incomeSatang: number;
   /** ภาษีที่หักในงวด (สตางค์) */
   taxSatang: number;
+  /** เงินเดือน/ค่าจ้างฐานของงวด (สตางค์) ใช้กับ กท.20 ก */
+  grossSatang?: number;
 }
 
 export interface PayeeLine {
