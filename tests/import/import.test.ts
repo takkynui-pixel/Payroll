@@ -128,6 +128,19 @@ describe("parseEmployeeWorkbook", () => {
     expect(byRow(4)).toContain("ต้องไม่ก่อนวันที่เริ่มงาน");
   });
 
+  it("อีเมล: แปลงเป็นตัวพิมพ์เล็ก และปฏิเสธอีเมลซ้ำในไฟล์ (1 อีเมลต่อ 1 พนักงาน)", async () => {
+    const ok = parseEmployeeWorkbook(await build([["E1", null, "ก", "ข", "01/10/2026", null, null, null, "Somchai@Example.COM", null, "รายเดือน", 15000, null, null, null]]));
+    expect(ok.issues).toEqual([]);
+    expect(ok.rows[0].email).toBe("somchai@example.com");
+    const dup = parseEmployeeWorkbook(
+      await build([
+        ["E1", null, "ก", "ข", "01/10/2026", null, null, null, "a@x.com", null, "รายเดือน", 15000, null, null, null],
+        ["E2", null, "ค", "ง", "01/10/2026", null, null, null, "A@X.com", null, "รายเดือน", 15000, null, null, null],
+      ]),
+    );
+    expect(dup.issues.some((i) => i.row === 3 && i.message.includes("อีเมล: ซ้ำกับแถว 2"))).toBe(true);
+  });
+
   it("ข้ามแถวว่างและเตือนเลขบัญชีที่เป็นตัวเลข", async () => {
     const wb = await build([
       [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null],

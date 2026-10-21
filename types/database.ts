@@ -1048,6 +1048,10 @@ export type Database = {
       /** [PENDING 004] */
       add_member:{ Args: { p_company?: string; p_email: string; p_role: string }; Returns: string };
       get_employee_id_card: { Args: { p_employee: string }; Returns: string };
+      /** [PENDING 010] */
+      claim_employee_account: { Args: Record<PropertyKey, never>; Returns: string };
+      /** [PENDING 010] */
+      link_employee_by_email: { Args: { p_employee: string }; Returns: string };
       /** [PENDING 004] */
       link_employee_account: {
         Args: { p_company: string; p_email: string; p_employee_code: string };

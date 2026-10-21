@@ -34,10 +34,19 @@ export async function getSession(): Promise<SessionInfo | null> {
   } = await supabase.auth.getUser();
   if (!user) return null;
 
-  const [{ data: members }, { data: emp }] = await Promise.all([
+  const [{ data: members }, empRes] = await Promise.all([
     supabase.from("company_members").select("role, company_id").eq("user_id", user.id).eq("is_active", true),
     supabase.from("employees").select("company_id").eq("user_id", user.id).is("deleted_at", null).maybeSingle(),
   ]);
+  let emp = empRes.data;
+
+  // ผู้ใช้ที่ยังไม่มีสิทธิ์ใด ๆ: ลองผูกกับพนักงานที่อีเมลตรงกัน (ครั้งแรกหลังทีม payroll เพิ่มอีเมลพนักงาน)
+  if (!emp && (members ?? []).length === 0) {
+    const { data: claimed } = await supabase.rpc("claim_employee_account");
+    if (claimed === "linked") {
+      emp = (await supabase.from("employees").select("company_id").eq("user_id", user.id).is("deleted_at", null).maybeSingle()).data;
+    }
+  }
 
   const roles = new Set<AppRole>();
   const companyIds = new Set<string>();

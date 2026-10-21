@@ -99,6 +99,7 @@ export function parseEmployeeWorkbook(wb: Workbook): ParsedEmployees {
   }
 
   const seenCodes = new Map<string, number>();
+  const seenEmails = new Map<string, number>();
   const seenIds = new Map<string, number>();
   let numericAccount = 0;
 
@@ -135,7 +136,7 @@ export function parseEmployeeWorkbook(wb: Workbook): ParsedEmployees {
     const email = r.field("อีเมล", () => {
       const e = optionalText(r.raw("email"), 254);
       if (e && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)) throw new Error("รูปแบบอีเมลไม่ถูกต้อง");
-      return e;
+      return e ? e.toLowerCase() : e;
     });
     const phone = r.field("โทรศัพท์", () => optionalText(r.raw("phone"), 30));
     const ss = r.field("หักประกันสังคม", () => parseYesNo(r.raw("social_security_deduct"), true));
@@ -159,6 +160,11 @@ export function parseEmployeeWorkbook(wb: Workbook): ParsedEmployees {
       const prev = seenCodes.get(code);
       if (prev !== undefined) r.errors.push(`รหัสพนักงาน: ซ้ำกับแถว ${prev} ในไฟล์`);
       else seenCodes.set(code, n);
+    }
+    if (email) {
+      const prev = seenEmails.get(email);
+      if (prev !== undefined) r.errors.push(`อีเมล: ซ้ำกับแถว ${prev} ในไฟล์ (1 อีเมลต่อ 1 พนักงาน)`);
+      else seenEmails.set(email, n);
     }
     if (idCard) {
       const prev = seenIds.get(idCard);
