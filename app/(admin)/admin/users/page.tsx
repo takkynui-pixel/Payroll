@@ -40,7 +40,7 @@ export default async function UsersPage() {
     <>
       <PageHeader
         title="ผู้ใช้และสิทธิ์"
-        description="สร้างบัญชีล็อกอินที่ Supabase Dashboard (Authentication → Users) ก่อน แล้วมากำหนดบทบาทที่นี่ ทุกการเปลี่ยนแปลงถูกบันทึกใน audit log"
+        description="สร้างบัญชีล็อกอินที่ก่อน แล้วมากำหนดบทบาทที่นี่"
       />
       <FormError message={error?.message.includes("list_access") ? "ยังไม่ได้ apply migration 004 (ฟังก์ชัน list_access ยังไม่มี)" : error?.message} />
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
