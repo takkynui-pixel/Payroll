@@ -9,7 +9,7 @@ import { tableClass, tableWrap, tdClass, thClass, thNumClass, trClass } from "@/
 import { formatBaht, formatDateTh } from "@/lib/format";
 import { employeeDisplayName } from "@/lib/payroll/mapping";
 import { createClient } from "@/lib/supabase/server";
-import { ChangeSalaryForm, CorrectSalaryForm, EditEmployeeForm } from "../employee-forms";
+import { AccountLinkCard, ChangeSalaryForm, CorrectSalaryForm, EditEmployeeForm } from "../employee-forms";
 
 export const metadata: Metadata = { title: "ข้อมูลพนักงาน" };
 
@@ -68,6 +68,7 @@ export default async function EmployeeDetailPage({ params }: { params: Promise<{
           }}
         />
         <div className="space-y-6">
+          <AccountLinkCard employeeId={employee.id} email={employee.email} linked={Boolean(employee.user_id)} />
           <ChangeSalaryForm
             employeeId={employee.id}
             current={

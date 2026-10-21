@@ -24,7 +24,7 @@ export default async function EmployeesPage({
   const supabase = await createClient();
   let query = supabase
     .from("employees")
-    .select("id,company_id,employee_code,title,first_name,last_name,bank_code,bank_account_no,hire_date,employment_status", {
+    .select("id,company_id,employee_code,title,first_name,last_name,email,user_id,bank_code,bank_account_no,hire_date,employment_status", {
       count: "exact",
     })
     .is("deleted_at", null)
@@ -107,6 +107,9 @@ export default async function EmployeesPage({
                   <th scope="col" className={thClass}>
                     สถานะ
                   </th>
+                  <th scope="col" className={thClass}>
+                    บัญชีดูสลิป
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -125,6 +128,7 @@ export default async function EmployeesPage({
                       {maskAccount(e.bank_account_no)}
                     </td>
                     <td className={tdClass}>{EMPLOYMENT_STATUS[e.employment_status] ?? e.employment_status}</td>
+                    <td className={tdClass}>{e.user_id ? "ผูกแล้ว" : e.email ? "รอผูก" : <span className="text-muted">ไม่มีอีเมล</span>}</td>
                   </tr>
                 ))}
               </tbody>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { changeSalaryAction, correctSalaryAction, createEmployeeAction, updateEmployeeAction } from "@/app/actions/employee";
+import { changeSalaryAction, correctSalaryAction, linkEmployeeByEmailAction, unlinkEmployeeAccountAction, createEmployeeAction, updateEmployeeAction } from "@/app/actions/employee";
 import { SubmitButton } from "@/components/submit-button";
 import { Field, FormError, inputClass } from "@/components/ui/field";
 import type { ActionState } from "@/lib/action-state";
@@ -273,5 +273,56 @@ export function CorrectSalaryForm({ employeeId, items }: { employeeId: string; i
       <Saved state={state} text="แก้ไขประวัติแล้ว" />
       <SubmitButton pendingText="กำลังบันทึก…">บันทึกการแก้ไข</SubmitButton>
     </form>
+  );
+}
+
+/** สถานะบัญชีล็อกอินของพนักงาน (ดูสลิปของตัวเอง) ผูกด้วยอีเมลในข้อมูลพนักงาน */
+export function AccountLinkCard({ employeeId, email, linked }: { employeeId: string; email: string | null; linked: boolean }) {
+  const [linkState, linkAction] = useActionState<ActionState, FormData>(linkEmployeeByEmailAction, {});
+  const [unlinkState, unlinkAction] = useActionState<ActionState, FormData>(unlinkEmployeeAccountAction, {});
+  return (
+    <section className="space-y-3 rounded-2xl border border-line bg-surface shadow-card p-4" aria-labelledby="acct-title">
+      <h2 id="acct-title" className="font-semibold text-brand-deep">
+        บัญชีล็อกอินดูสลิป
+      </h2>
+      {linked ? (
+        <>
+          <p className="text-sm text-ink">
+            <span className="rounded-full bg-ok/10 px-2 py-0.5 text-xs font-medium text-ok">ผูกแล้ว</span> พนักงานล็อกอินดูสลิปของตัวเองได้
+          </p>
+          <form action={unlinkAction}>
+            <input type="hidden" name="employeeId" value={employeeId} />
+            <FormError message={unlinkState.error} />
+            <SubmitButton pendingText="กำลังบันทึก…" variant="secondary">
+              ยกเลิกการผูกบัญชี
+            </SubmitButton>
+          </form>
+          <p className="text-xs text-muted">ถ้าแก้อีเมลของพนักงานที่ผูกไว้แล้ว ระบบจะยกเลิกการผูกเดิมให้อัตโนมัติ แล้วพนักงานล็อกอินด้วยอีเมลใหม่เพื่อผูกใหม่</p>
+        </>
+      ) : email ? (
+        <>
+          <p className="text-sm text-ink">
+            <span className="rounded-full bg-warn/10 px-2 py-0.5 text-xs font-medium text-warn">รอผูก</span> อีเมลที่ใช้ผูก: <b>{email}</b>
+          </p>
+          <p className="text-xs text-muted">
+            พนักงานเข้าสู่ระบบด้วยแท็บ “รับรหัสทางอีเมล” ที่หน้าเข้าสู่ระบบ ระบบจะผูกบัญชีให้อัตโนมัติเมื่ออีเมลตรงกัน หากมีบัญชีอยู่แล้ว กดผูกให้ได้ที่นี่
+          </p>
+          <form action={linkAction}>
+            <input type="hidden" name="employeeId" value={employeeId} />
+            <FormError message={linkState.error} />
+            <SubmitButton pendingText="กำลังผูก…" variant="secondary">
+              ผูกกับบัญชีที่มีอยู่ตามอีเมลนี้
+            </SubmitButton>
+          </form>
+        </>
+      ) : (
+        <p className="text-sm text-muted">ยังไม่มีอีเมล กรอกอีเมลในฟอร์มข้อมูลพนักงานแล้วบันทึก พนักงานจึงจะล็อกอินดูสลิปได้</p>
+      )}
+      {linkState.ok || unlinkState.ok ? (
+        <p role="status" className="text-sm text-ok">
+          บันทึกแล้ว
+        </p>
+      ) : null}
+    </section>
   );
 }

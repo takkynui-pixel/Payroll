@@ -49,6 +49,7 @@ async function loadWorkbook(file: unknown): Promise<ExcelJS.Workbook | string> {
 function mapRpcError(error: { code?: string; message: string }): string {
   if (error.code === "42501") return "คุณไม่มีสิทธิ์นำเข้าข้อมูล";
   if (error.code === "55006") return "งวดนี้ถูกล็อกแล้ว นำเข้าไม่ได้";
+  if (error.code === "23505" && error.message.includes("employees_email_uq")) return "มีอีเมลซ้ำกับพนักงานที่มีอยู่ (1 อีเมลต่อ 1 พนักงาน) ตรวจไฟล์ใหม่อีกครั้ง";
   if (error.code === "23505") return "มีรหัสพนักงาน/บัญชีซ้ำกับข้อมูลที่มีอยู่ (อาจมีคนนำเข้าพร้อมกัน) ตรวจไฟล์ใหม่อีกครั้ง";
   if (error.message.startsWith("unknown_employee:")) return `ไม่พบรหัสพนักงาน ${error.message.split(":")[1]} ในบริษัทนี้`;
   if (error.message.includes("invalid thai national id")) return "เลขบัตรประชาชนไม่ถูกต้อง";
@@ -93,11 +94,13 @@ async function importEmployees(supabase: Client, wb: ExcelJS.Workbook, companyId
 
   // รหัสพนักงานซ้ำกับที่มีอยู่ในบริษัท (เพิ่มได้เฉพาะพนักงานใหม่)
   let existing = new Set<string>();
+  const emailOwner = new Map<string, string>();
   try {
     const rows = await fetchAll((f, t) =>
-      supabase.from("employees").select("employee_code").eq("company_id", companyId).is("deleted_at", null).order("employee_code").range(f, t),
+      supabase.from("employees").select("employee_code,email").eq("company_id", companyId).is("deleted_at", null).order("employee_code").range(f, t),
     );
     existing = new Set(rows.map((r) => r.employee_code));
+    for (const r of rows) if (r.email) emailOwner.set(r.email.trim().toLowerCase(), r.employee_code);
   } catch (e) {
     return failure(e instanceof Error ? e.message : "อ่านรายชื่อพนักงานเดิมไม่สำเร็จ");
   }
@@ -107,11 +110,23 @@ async function importEmployees(supabase: Client, wb: ExcelJS.Workbook, companyId
     }
   });
 
+  // 1 อีเมลต่อ 1 พนักงาน (ใช้ผูกบัญชีล็อกอิน) ซ้ำกับพนักงานเดิมไม่ได้
+  parsed.rows.forEach((r, i) => {
+    const owner = r.email ? emailOwner.get(r.email) : undefined;
+    if (owner) issues.push({ sheet: "พนักงาน", row: parsed.rowNumbers[i], message: `อีเมล ${r.email} ซ้ำกับพนักงาน ${owner} ที่มีอยู่แล้ว (1 อีเมลต่อ 1 พนักงาน)` });
+  });
+
   const withId = parsed.rows.filter((r) => r.id_card).length;
+  const withEmail = parsed.rows.filter((r) => r.email).length;
+  const noEmail = parsed.rows.length - withEmail;
+  if (noEmail > 0) {
+    parsed.warnings.push(`พนักงาน ${noEmail.toLocaleString("th-TH")} คนไม่มีอีเมล จะยังล็อกอินดูสลิปไม่ได้ จนกว่าจะเพิ่มอีเมลที่หน้าข้อมูลพนักงาน`);
+  }
   const summary = [
     { label: "บริษัท", value: company.name },
     { label: "พนักงานใหม่ที่จะเพิ่ม", value: `${parsed.rows.length.toLocaleString("th-TH")} คน` },
     { label: "มีเลขบัตรประชาชน", value: `${withId.toLocaleString("th-TH")} คน` },
+    { label: "มีอีเมล (ผูกบัญชีล็อกอินอัตโนมัติ)", value: `${withEmail.toLocaleString("th-TH")} คน` },
   ];
   const canCommit = issues.length === 0 && parsed.rows.length > 0;
   if (mode === "preview" || !canCommit) {

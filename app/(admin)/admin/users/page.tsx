@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { Metadata } from "next";
 import { EmptyState, PageHeader } from "@/components/page-header";
 import { FormError } from "@/components/ui/field";
@@ -5,7 +6,7 @@ import { tableClass, tableWrap, tdClass, thClass, trClass } from "@/components/u
 import { requireRole } from "@/lib/auth";
 import { formatDateTh } from "@/lib/format";
 import { createClient } from "@/lib/supabase/server";
-import { AddMemberForm, LinkEmployeeForm } from "./member-forms";
+import { AddMemberForm } from "./member-forms";
 import { RowActions } from "./row-actions";
 
 export const metadata: Metadata = { title: "ผู้ใช้และสิทธิ์" };
@@ -40,7 +41,7 @@ export default async function UsersPage() {
     <>
       <PageHeader
         title="ผู้ใช้และสิทธิ์"
-        description="สร้างบัญชีล็อกอินที่ก่อน แล้วมากำหนดบทบาทที่นี่"
+        description="สร้างบัญชีล็อกอินที่ Supabase Dashboard (Authentication → Users) ก่อน แล้วมากำหนดบทบาทที่นี่ ทุกการเปลี่ยนแปลงถูกบันทึกใน audit log"
       />
       <FormError message={error?.message.includes("list_access") ? "ยังไม่ได้ apply migration 004 (ฟังก์ชัน list_access ยังไม่มี)" : error?.message} />
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
@@ -126,7 +127,15 @@ export default async function UsersPage() {
         </div>
         <div className="space-y-6">
           <AddMemberForm companies={companies} />
-          <LinkEmployeeForm companies={companies} />
+          <section className="space-y-2 rounded-2xl border border-line bg-surface p-4 shadow-card">
+            <h2 className="font-semibold text-brand-deep">บัญชีพนักงาน (ดูสลิป)</h2>
+            <p className="text-sm text-muted">
+              ผูกด้วยอีเมลของพนักงาน: ใส่อีเมลตอนนำเข้าพนักงานหรือแก้ที่หน้าข้อมูลพนักงาน แล้วให้พนักงานเข้าสู่ระบบด้วย “รับรหัสทางอีเมล” ระบบผูกให้อัตโนมัติ ดูสถานะและยกเลิกการผูกได้ที่หน้าพนักงาน
+            </p>
+            <Link href="/admin/employees" className="text-sm font-medium text-brand hover:underline">
+              ไปที่รายชื่อพนักงาน
+            </Link>
+          </section>
         </div>
       </div>
     </>

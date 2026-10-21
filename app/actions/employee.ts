@@ -27,9 +27,11 @@ const salaryFields = {
 
 function mapDbError(error: { code?: string; message: string }, fallback: string): string {
   if (error.code === "42501") return "คุณไม่มีสิทธิ์ดำเนินการนี้";
-  if (error.code === "23505") return "รหัสพนักงานนี้มีอยู่แล้วในบริษัท";
+  if (error.code === "23505") return error.message.includes("employees_email_uq") ? "อีเมลนี้ถูกใช้กับพนักงานคนอื่นแล้ว (1 อีเมลต่อ 1 พนักงาน)" : "รหัสพนักงานนี้มีอยู่แล้วในบริษัท";
   if (error.code === "23P01" || error.message === "salary_overlap") return "วันที่มีผลซ้อนกับโครงสร้างเงินเดือนที่มีอยู่แล้ว ตรวจประวัติด้านล่าง";
   if (error.message === "employee_not_found") return "ไม่พบพนักงาน";
+  if (error.message === "already_linked") return "พนักงานคนนี้ผูกบัญชีแล้ว";
+  if (error.message === "no_email") return "พนักงานคนนี้ยังไม่มีอีเมล กรอกอีเมลในข้อมูลพนักงานก่อน";
   if (error.message.includes("id_card_key")) return "ยังไม่ได้ตั้ง Vault secret id_card_key จึงเก็บเลขบัตรไม่ได้";
   return `${fallback}: ${error.message}`;
 }
@@ -99,12 +101,21 @@ export async function updateEmployeeAction(_prev: ActionState, formData: FormDat
   if (fields.employment_status === "resigned" && !termination_date) return { error: "สถานะลาออกต้องระบุวันที่สิ้นสุดการจ้าง" };
 
   const supabase = await createClient();
+  const { data: before } = await supabase.from("employees").select("email,user_id").eq("id", employeeId).is("deleted_at", null).maybeSingle();
   const { error } = await supabase
     .from("employees")
     .update({ ...fields, termination_date: termination_date || null })
     .eq("id", employeeId)
     .is("deleted_at", null);
   if (error) return { error: mapDbError(error, "บันทึกไม่สำเร็จ") };
+
+  // เปลี่ยนอีเมลของพนักงานที่ผูกบัญชีไว้แล้ว: ยกเลิกการผูกเดิม (ผูกไว้ด้วยอีเมลเก่า) เพื่อให้ผูกใหม่ด้วยอีเมลใหม่
+  // และไม่ให้บัญชีของอีเมลเก่าเห็นสลิปของพนักงานคนนี้ต่อ
+  const norm = (v: string | null | undefined) => (v ?? "").trim().toLowerCase();
+  if (before?.user_id && norm(before.email) !== norm(fields.email)) {
+    const { error: unlinkErr } = await supabase.rpc("unlink_employee_account", { p_employee: employeeId });
+    if (unlinkErr) return { error: `บันทึกข้อมูลแล้ว แต่ยกเลิกการผูกบัญชีเดิมไม่สำเร็จ: ${mapDbError(unlinkErr, "ยกเลิกการผูก")}` };
+  }
 
   if (id_card) {
     const { error: idErr } = await supabase.rpc("set_employee_id_card", { p_employee: employeeId, p_id_card: id_card });
@@ -166,5 +177,35 @@ export async function correctSalaryAction(_prev: ActionState, formData: FormData
   if (!data || data.length === 0) return { error: "ไม่พบรายการนี้ หรือคุณไม่มีสิทธิ์แก้ไข" };
 
   revalidatePath(`/admin/employees/${employeeId}`);
+  return { ok: true };
+}
+
+const idOnly = z.object({ employeeId: z.uuid() });
+
+/** ผูกพนักงานกับบัญชีล็อกอินที่มีอยู่แล้ว โดยใช้อีเมลในข้อมูลพนักงาน (ถ้ายังไม่มีบัญชี พนักงานล็อกอินด้วยรหัสทางอีเมลแล้วระบบผูกให้เอง) */
+export async function linkEmployeeByEmailAction(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  await requireRole(STAFF_ROLES);
+  const parsed = idOnly.safeParse(Object.fromEntries(formData));
+  if (!parsed.success) return { error: "ข้อมูลไม่ถูกต้อง" };
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("link_employee_by_email", { p_employee: parsed.data.employeeId });
+  if (error) {
+    if (error.code === "PGRST202") return { error: "ยังไม่ได้รัน migration 010" };
+    return { error: mapDbError(error, "ผูกบัญชีไม่สำเร็จ") };
+  }
+  revalidatePath(`/admin/employees/${parsed.data.employeeId}`);
+  if (data === "no_account") return { error: "ยังไม่มีบัญชีล็อกอินที่ใช้อีเมลนี้ ให้พนักงานเข้าสู่ระบบด้วย “รับรหัสทางอีเมล” ครั้งแรก ระบบจะผูกให้อัตโนมัติ" };
+  return { ok: true };
+}
+
+export async function unlinkEmployeeAccountAction(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  await requireRole(STAFF_ROLES);
+  const parsed = idOnly.safeParse(Object.fromEntries(formData));
+  if (!parsed.success) return { error: "ข้อมูลไม่ถูกต้อง" };
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("unlink_employee_account", { p_employee: parsed.data.employeeId });
+  if (error) return { error: mapDbError(error, "ยกเลิกการผูกไม่สำเร็จ") };
+  revalidatePath(`/admin/employees/${parsed.data.employeeId}`);
+  revalidatePath("/admin/employees");
   return { ok: true };
 }
