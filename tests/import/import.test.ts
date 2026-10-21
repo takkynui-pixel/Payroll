@@ -235,7 +235,7 @@ describe("parseTimesheetWorkbook แบบ วัน/ชั่วโมง/น�
     return roundTrip(wb);
   }
 
-  it("แปลง วัน/ชั่วโมง/นาที เป็นนาที และค่ากะ/ค่ากินเป็นรายได้ที่ไม่เสียภาษี ไม่เป็นฐานประกันสังคม", async () => {
+  it("แปลง วัน/ชั่วโมง/นาที เป็นนาที และค่ากะ/ค่ากินเป็นรายได้ที่เสียภาษี ไม่เป็นฐานประกันสังคม", async () => {
     // 15 วัน 7 ชม., OT1.5 = 47 ชม. 30 นาที, OT2.0 = 16 ชม., OT3.0 = 2 ชม. 30 นาที, ค่ากะ 530
     const wb = await build([dataRow("T1", { 1: 15, 2: 7, 24: 47, 25: 30, 27: 16, 33: 2, 34: 30, 19: 530 })]);
     const r = parseTimesheetWorkbook(wb);
@@ -245,7 +245,7 @@ describe("parseTimesheetWorkbook แบบ วัน/ชั่วโมง/น�
       ot_minutes_1_0: 0, ot_minutes_1_5: 47 * 60 + 30, ot_minutes_2_0: 960, ot_minutes_2_5: 0, ot_minutes_3_0: 150,
     });
     expect(r.adjustments).toEqual([
-      { employee_code: "T1", adjustment_type: "earning", item_name: "ค่ากะ", amount: 530, is_taxable: false, is_ss_base: false },
+      { employee_code: "T1", adjustment_type: "earning", item_name: "ค่ากะ", amount: 530, is_taxable: true, is_ss_base: false },
     ]);
     expect(r.timesheetRows).toEqual([3]);
   });

@@ -349,3 +349,49 @@ describe("พนักงานที่เริ่มงาน/ลาออก
     expect(note).not.toMatch(/M10/);
   });
 });
+
+describe("คิดเงินเดือนรายเดือนตามสัดส่วนวันในงวด", () => {
+  const withDates = { ...ctx, dates: { start: "2026-10-01", end: "2026-10-31" } };
+
+  it("เริ่มงานกลางงวด (รายเดือน) ส่ง proratedBaseSalary ให้ engine และ engine จ่ายตามนั้น", () => {
+    const r = assemblePayrollInputs(
+      raw({ employees: [employeeRow({ hire_date: "2026-10-15" })], salaries: [salaryRow({ effective_date: "2026-10-15" })], timesheets: [] }),
+      withDates,
+    );
+    expect(r.inputs[0].employee.proratedBaseSalary).toBe(28333.33);
+    expect(r.notes.join("\n")).toContain("คิดเงินเดือนตามสัดส่วนวันทำงานจริง");
+    expect(calculatePayroll(r.inputs[0]).grossSalary).toBe(28333.33);
+  });
+
+  it("ขึ้นเงินเดือนกลางงวดและมีแถวเงินเดือนเก่าครบ -> ถ่วงน้ำหนัก อัตรา OT ใช้เงินเดือนล่าสุด", () => {
+    const r = assemblePayrollInputs(
+      raw({
+        salaries: [
+          salaryRow({ id: "s0", base_salary: 40000, effective_date: "2025-01-01", end_date: "2026-10-15" }),
+          salaryRow({ id: "s1", base_salary: 50000, effective_date: "2026-10-16" }),
+        ],
+        timesheets: [],
+      }),
+      withDates,
+    );
+    expect(r.inputs[0].employee.proratedBaseSalary).toBe(45161.29);
+    expect(r.inputs[0].employee.baseSalary).toBe(50000);
+  });
+
+  it("รายวันเริ่มงานกลางงวด ไม่คิดสัดส่วน (จ่ายตามวันทำงานในไฟล์เวลา)", () => {
+    const r = assemblePayrollInputs(
+      raw({
+        employees: [employeeRow({ hire_date: "2026-10-15" })],
+        salaries: [salaryRow({ effective_date: "2026-10-15", pay_type: "daily", base_salary: 380 })],
+        timesheets: [],
+      }),
+      withDates,
+    );
+    expect(r.inputs[0].employee.proratedBaseSalary).toBeUndefined();
+  });
+
+  it("เต็มงวด ไม่ส่ง proratedBaseSalary", () => {
+    const r = assemblePayrollInputs(raw({ salaries: [salaryRow({ effective_date: "2025-01-01" })], timesheets: [] }), withDates);
+    expect(r.inputs[0].employee.proratedBaseSalary).toBeUndefined();
+  });
+});

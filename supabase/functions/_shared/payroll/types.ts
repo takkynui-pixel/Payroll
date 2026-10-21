@@ -38,6 +38,11 @@ export interface EmployeeInput {
   bankAccountNo: string | null;
   payType: PayType;
   baseSalary: number;
+  /**
+   * เงินเดือนที่จ่ายจริงในงวดนี้ (เฉพาะพนักงานรายเดือน) กรณีเริ่มงาน/สิ้นสุดการจ้าง/ปรับเงินเดือนกลางงวด
+   * คิดตามสัดส่วนวันทำงานจริงโดยผู้เรียก  ไม่ส่ง = จ่ายเต็มงวด  อัตรารายวัน/ชั่วโมงยังคิดจาก baseSalary
+   */
+  proratedBaseSalary?: number;
   socialSecurityDeduct: boolean;
   taxDeductType: TaxDeductType;
 }

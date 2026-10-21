@@ -116,7 +116,8 @@ export function parseTimesheetWorkbook(wb: Workbook): ParsedTimesheets {
         adjustment_type: "earning" as const,
         item_name: a.item_name,
         amount: a.amount,
-        is_taxable: false,
+        // ตามรายการรายได้ของบริษัท: ค่ากะ/ค่ากินเสียภาษี แต่ไม่เป็นฐานประกันสังคม
+        is_taxable: true,
         is_ss_base: false,
       }));
       res.allowances.forEach((a) => adjustmentRows.push(a.row));

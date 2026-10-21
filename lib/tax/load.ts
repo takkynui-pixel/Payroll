@@ -51,7 +51,7 @@ export async function loadFilingData(
   for (let i = 0; i < ids.length; i += 4) {
     const { data, error } = await supabase
       .from("payroll_results")
-      .select("payroll_period_id,employee_id,employee_name,total_earnings,tax_amount,gross_salary,input_snapshot")
+      .select("payroll_period_id,employee_id,employee_name,total_earnings,tax_amount,gross_salary,ot_amount,input_snapshot")
       .in("payroll_period_id", ids.slice(i, i + 4))
       .limit(5000);
     if (error) return { error: error.message };
@@ -60,11 +60,12 @@ export async function loadFilingData(
         employeeId: r.employee_id,
         employeeName: r.employee_name,
         payDate: payDate.get(r.payroll_period_id) ?? "",
-        // ภ.ง.ด.1/1ก ใช้เงินได้ที่เสียภาษี (ไม่รวมรายได้ที่ยกเว้น เช่น ค่ากะ/ค่ากิน) ถ้าไม่มี snapshot ใช้รายได้รวม
+        // ภ.ง.ด.1/1ก ใช้เงินได้ที่เสียภาษี (ไม่รวมรายได้ที่ยกเว้นภาษี ถ้ามี) ถ้าไม่มี snapshot ใช้รายได้รวม
         incomeSatang: toSatang(taxableOf(r.input_snapshot) ?? r.total_earnings),
-        wageSatang: toSatang(r.total_earnings),
+        // กท.20 ก ใช้เฉพาะ "เงินเดือน/ค่าจ้าง" หลังหักขาด/สาย ตามรายการรายได้ของบริษัท (ไม่รวม OT และรายได้อื่น)
+        wageSatang: toSatang(r.gross_salary) - toSatang(r.ot_amount),
         taxSatang: toSatang(r.tax_amount),
-        grossSatang: toSatang(r.gross_salary),
+        grossSatang: toSatang(r.gross_salary) - toSatang(r.ot_amount),
       });
     }
   }

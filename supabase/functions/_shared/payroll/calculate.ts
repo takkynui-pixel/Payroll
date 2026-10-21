@@ -37,7 +37,7 @@ function assertNonNegative(label: string, n: number): void {
  *  - OT = ค่าจ้างรายชั่วโมง x ชั่วโมง x ตัวคูณ (1.0 / 1.5 / 2.0 / 2.5 / 3.0) ปัดเศษเป็นสตางค์ทีละรายการ
  *  - ฐานประกันสังคม = ค่าจ้างหลังหักขาด/สาย + รายรับที่ติด is_ss_base (ไม่รวม OT)
  *  - ภาษี: ฐานภาษีงวดนี้ = gross (รวม OT) + รายรับที่ is_taxable
- *  - ไม่คิดเงินเดือนตามสัดส่วนวัน กรณีเริ่มงาน/ลาออกกลางงวด (ยังไม่รองรับ)
+ *  - เริ่มงาน/ลาออก/ปรับเงินเดือนกลางงวด (รายเดือน): ผู้เรียกส่ง proratedBaseSalary (คิดตามวันทำงานจริง) มาแทนเงินเดือนเต็ม
  */
 export function calculatePayroll(input: PayrollInput): PayrollOutput {
   const opts: CalcOptions = { ...DEFAULT_OPTIONS, ...input.options };
@@ -47,6 +47,7 @@ export function calculatePayroll(input: PayrollInput): PayrollOutput {
 
   const { employee: emp, rates } = input;
   assertNonNegative("baseSalary", emp.baseSalary);
+  if (emp.proratedBaseSalary !== undefined) assertNonNegative("proratedBaseSalary", emp.proratedBaseSalary);
 
   const warnings: string[] = [];
   const hasTimesheet = input.timesheet !== null;
@@ -72,7 +73,8 @@ export function calculatePayroll(input: PayrollInput): PayrollOutput {
     case "monthly":
       dailyRate = baseSatang / opts.monthlyDivisor;
       hourlyRate = dailyRate / opts.hoursPerDay;
-      basePaySatang = baseSatang;
+      basePaySatang = emp.proratedBaseSalary === undefined ? baseSatang : toSatang(emp.proratedBaseSalary);
+      if (emp.proratedBaseSalary !== undefined) warnings.push("คิดเงินเดือนตามวันทำงานจริงในงวด (เริ่มงาน/สิ้นสุดการจ้าง/ปรับเงินเดือนกลางงวด)");
       break;
     case "daily":
       dailyRate = baseSatang;

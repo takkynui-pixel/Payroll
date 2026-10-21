@@ -14,7 +14,7 @@ const MAX_ROWS = 10_000;
 export interface DhmResult {
   rows: Record<string, number | string>[];
   rowNumbers: number[];
-  /** ค่ากะ/ค่ากิน เป็นรายการเพิ่ม (รายได้ ไม่เสียภาษี ไม่เป็นฐานประกันสังคม) */
+  /** ค่ากะ/ค่ากิน เป็นรายการเพิ่ม (รายได้ เสียภาษี ไม่เป็นฐานประกันสังคม) */
   allowances: { employee_code: string; item_name: string; amount: number; row: number }[];
   hasAllowanceColumns: boolean;
   issues: ImportIssue[];

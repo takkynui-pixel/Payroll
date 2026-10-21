@@ -76,7 +76,7 @@ export async function calculatePayrollPeriod(supabase: Client, periodId: string)
           .select("*")
           .eq("company_id", cid)
           .lte("effective_date", period.end_date)
-          .or(`end_date.is.null,end_date.gte.${period.end_date}`)
+          .or(`end_date.is.null,end_date.gte.${period.start_date}`)
           .range(f, t),
       ),
       fetchAll((f, t) => supabase.from("employee_timesheets").select("*").eq("payroll_period_id", periodId).range(f, t)),

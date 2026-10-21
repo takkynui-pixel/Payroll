@@ -10,6 +10,7 @@ import {
   type TaxDeductType,
 } from "@payroll";
 import type { Json, Tables, TablesInsert } from "@/types/database";
+import { prorateMonthly } from "./proration";
 
 export interface EmployeeIssue {
   employeeCode: string;
@@ -74,6 +75,7 @@ export function assemblePayrollInputs(
   const issues: EmployeeIssue[] = [];
   const notes: string[] = [];
   const partialPeriod: string[] = [];
+  const proratedList: string[] = [];
 
   const salaryBy = groupBy(raw.salaries, (s) => s.employee_id);
   const sheetBy = groupBy(raw.timesheets, (t) => t.employee_id);
@@ -88,16 +90,20 @@ export function assemblePayrollInputs(
     const name = employeeDisplayName(e);
     const fail = (message: string) => issues.push({ employeeCode: e.employee_code, employeeName: name, message });
 
-    const salaries = salaryBy.get(e.id) ?? [];
+    const salaries = [...(salaryBy.get(e.id) ?? [])].sort((a, b) => a.effective_date.localeCompare(b.effective_date));
     if (salaries.length === 0) {
       fail("ไม่มีโครงสร้างเงินเดือนที่มีผลในงวดนี้ (employee_salaries)");
       continue;
     }
-    if (salaries.length > 1) {
+    const overlaps = salaries.some((a, i) =>
+      salaries.some((b, j) => j > i && a.effective_date <= (b.end_date ?? "9999-12-31") && b.effective_date <= (a.end_date ?? "9999-12-31")),
+    );
+    if (overlaps) {
       fail("มีโครงสร้างเงินเดือนซ้อนกันมากกว่า 1 รายการในงวดนี้");
       continue;
     }
-    const salary = salaries[0];
+    // โครงสร้างที่ใช้กับอัตรา OT/หักขาดสาย = รายการล่าสุดที่มีผลภายในงวด
+    const salary = salaries[salaries.length - 1];
     if (!PAY_TYPES.includes(salary.pay_type as PayType)) {
       fail(`ประเภทการจ่าย '${salary.pay_type}' ไม่รู้จัก`);
       continue;
@@ -114,7 +120,9 @@ export function assemblePayrollInputs(
     }
     const sheet = sheets[0];
 
-    // engine ยังไม่คิดเงินเดือนตามสัดส่วนวัน: ถ้าไม่เตือน พนักงานเริ่มงาน/ลาออก/ขึ้นเงินเดือนกลางงวดจะได้ยอดเต็มงวดแบบเงียบ ๆ
+    // เริ่มงาน/ลาออก/ปรับเงินเดือนกลางงวด: รายเดือนคิดตามสัดส่วนวันทำงานจริง (ฐาน 30)
+    // รายวัน/รายชั่วโมงจ่ายตามวันทำงานในไฟล์เวลาอยู่แล้ว ไม่ต้องคิดสัดส่วน
+    let proratedBaseSalary: number | undefined;
     if (ctx.dates) {
       const { start, end } = ctx.dates;
       const why: string[] = [];
@@ -123,7 +131,20 @@ export function assemblePayrollInputs(
       if (salary.effective_date > start && e.hire_date < salary.effective_date) {
         why.push(`เงินเดือนใหม่มีผลวันที่ ${salary.effective_date}`);
       }
-      if (why.length > 0) partialPeriod.push(`${e.employee_code} ${name} (${why.join(", ")})`);
+      if (why.length > 0) {
+        const label = `${e.employee_code} ${name}`;
+        const p =
+          salary.pay_type === "monthly"
+            ? prorateMonthly({ start, end, hireDate: e.hire_date, terminationDate: e.termination_date, salaries })
+            : null;
+        if (p && !p.mixedPayType && p.partial && p.coveredDays === p.employedDays && p.coveredDays > 0) {
+          proratedBaseSalary = p.amount;
+          proratedList.push(`${label} (${why.join(", ")}) จ่าย ${p.amount.toLocaleString("en-US", { minimumFractionDigits: 2 })} บาท จากอยู่ในการจ้าง ${p.coveredDays} วัน`);
+        } else if (salary.pay_type === "monthly") {
+          // มีช่วงที่ไม่มีโครงสร้างเงินเดือน หรือเปลี่ยนประเภทการจ่ายกลางงวด: ไม่เดา ใช้เต็มและให้ผู้ใช้ตรวจ
+          partialPeriod.push(`${label} (${why.join(", ")})`);
+        }
+      }
     }
 
     // ยอดสะสมของปีภาษี = ยกมา (ถ้ามี) + งวดก่อนหน้าที่ปิดแล้ว
@@ -148,6 +169,7 @@ export function assemblePayrollInputs(
         bankAccountNo: e.bank_account_no,
         payType: salary.pay_type as PayType,
         baseSalary: Number(salary.base_salary),
+        ...(proratedBaseSalary === undefined ? {} : { proratedBaseSalary }),
         socialSecurityDeduct: salary.social_security_deduct,
         taxDeductType: salary.tax_deduct_type as TaxDeductType,
       },
@@ -183,12 +205,17 @@ export function assemblePayrollInputs(
     });
   }
 
-  if (partialPeriod.length > 0) {
-    const shown = partialPeriod.slice(0, 10).join("; ");
-    const more = partialPeriod.length > 10 ? ` และอีก ${partialPeriod.length - 10} คน` : "";
+  const fmt = (list: string[]) => `${list.slice(0, 10).join("; ")}${list.length > 10 ? ` และอีก ${list.length - 10} คน` : ""}`;
+  if (proratedList.length > 0) {
     notes.push(
-      `พนักงานที่เริ่มงาน/สิ้นสุดการจ้าง/ปรับเงินเดือนกลางงวด ${partialPeriod.length} คน: ${shown}${more} ` +
-        "ระบบยังไม่คิดตามสัดส่วนวัน (ใช้เงินเดือนที่มีผล ณ วันสิ้นสุดงวดเต็มจำนวน) ให้ตรวจและปรับยอดเอง",
+      `พนักงานรายเดือนที่เริ่มงาน/สิ้นสุดการจ้าง/ปรับเงินเดือนกลางงวด ${proratedList.length} คน: ${fmt(proratedList)} ` +
+        "ระบบคิดเงินเดือนตามสัดส่วนวันทำงานจริง (ฐาน 30 วัน) ตรวจยอดก่อนอนุมัติ",
+    );
+  }
+  if (partialPeriod.length > 0) {
+    notes.push(
+      `พนักงานรายเดือนที่เริ่มงาน/สิ้นสุดการจ้าง/ปรับเงินเดือนกลางงวด ${partialPeriod.length} คน: ${fmt(partialPeriod)} ` +
+        "ระบบคิดสัดส่วนวันให้ไม่ได้ (ช่วงที่ไม่มีโครงสร้างเงินเดือนหรือเปลี่ยนประเภทการจ่ายกลางงวด) จึงใช้เงินเดือนที่มีผล ณ วันสิ้นสุดงวดเต็มจำนวน ให้ตรวจและปรับยอดเอง",
     );
   }
 

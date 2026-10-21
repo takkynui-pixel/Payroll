@@ -36,7 +36,7 @@ describe("buildWcf (กท.20 ก)", () => {
 });
 
 describe("buildWcf ใช้ค่าจ้างรวม (wageSatang) ไม่ใช่เงินได้ที่เสียภาษี", () => {
-  it("ค่ากะที่ไม่เสียภาษีนับเป็นค่าอื่น ๆ ใน กท.20 ก", () => {
+  it("รายได้ที่ยกเว้นภาษีนับเป็นค่าอื่น ๆ ใน กท.20 ก", () => {
     const r = buildWcf([{ employeeId: "a", employeeName: "a", payDate: "2026-10-31", incomeSatang: 760000, wageSatang: 1500000, taxSatang: 0, grossSatang: 760000 }], 2026, new Map());
     expect(r.months[9]).toMatchObject({ salarySatang: 760000, otherSatang: 740000, totalSatang: 1500000 });
   });
