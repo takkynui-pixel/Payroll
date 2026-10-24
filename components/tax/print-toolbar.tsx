@@ -11,7 +11,7 @@ export function PrintToolbar({ backHref, title, pdfHref }: { backHref: string; t
         <h1 className="text-2xl font-semibold tracking-tight text-brand-deep">{title}</h1>
         <p className="text-sm text-muted">
           {pdfHref
-            ? "ดาวน์โหลด PDF ที่พิมพ์ข้อมูลทับบนแบบฟอร์มของกรมสรรพากร (หน้าปะหน้า + คำชี้แจง + ใบแนบ) พร้อมพิมพ์ยื่นได้ทันที หน้าด้านล่างเป็นตัวอย่างคร่าว ๆ เท่านั้น"
+            ? "ดาวน์โหลด PDF ที่พิมพ์ข้อมูลทับบนแบบฟอร์มของกรมสรรพากร (หน้าปะหน้า + คำชี้แจง + ใบแนบ) พร้อมพิมพ์ยื่นได้ทันที (ด้านล่างคือไฟล์เดียวกัน)"
             : "กด “พิมพ์ / บันทึกเป็น PDF” แล้วเลือกปลายทาง “บันทึกเป็น PDF” ตั้งค่ากระดาษ A4 และปิดส่วนหัว/ท้ายกระดาษ"}
         </p>
       </div>
@@ -24,9 +24,11 @@ export function PrintToolbar({ backHref, title, pdfHref }: { backHref: string; t
             ดาวน์โหลด PDF (แบบสรรพากร)
           </a>
         ) : null}
-        <button type="button" onClick={() => window.print()} className={buttonClass({ variant: pdfHref ? "secondary" : "dark" })}>
-          พิมพ์ตัวอย่างนี้
-        </button>
+        {pdfHref ? null : (
+          <button type="button" onClick={() => window.print()} className={buttonClass({ variant: "dark" })}>
+            พิมพ์ / บันทึกเป็น PDF
+          </button>
+        )}
       </div>
     </div>
   );
