@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import type { ActionState } from "@/lib/action-state";
+import { normalizeBankCode } from "@/lib/bank/banks";
 import { requireRole, STAFF_ROLES } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 
@@ -90,6 +91,43 @@ export async function updateCompanyFilingAction(_prev: ActionState, formData: Fo
     return { error: `บันทึกไม่สำเร็จ: ${error.message}` };
   }
   revalidatePath("/admin/companies");
+  revalidatePath(`/admin/companies/${companyId}`);
+  return { ok: true };
+}
+
+const bankSchema = z.object({
+  companyId: z.uuid(),
+  pay_bank_code: z.string().trim().max(30),
+  pay_bank_account_no: z.string().trim().transform((v) => v.replace(/[\s-]/g, "")).pipe(z.string().regex(/^\d{10,15}$/, "เลขบัญชีต้องเป็นตัวเลข 10-15 หลัก").or(z.literal(""))),
+  pay_account_name: optional(150, "ชื่อบัญชี"),
+  bank_customer_id: optional(15, "รหัสลูกค้า/Company ID (ไม่เกิน 15 ตัวอักษร)"),
+  bank_file_format: z.enum(["csv", "fixed_tis620"], "เลือกรูปแบบไฟล์"),
+});
+
+/** บันทึกบัญชีต้นทางและรูปแบบไฟล์นำส่งธนาคารของบริษัท */
+export async function updateCompanyBankAction(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  await requireRole(STAFF_ROLES);
+  const parsed = bankSchema.safeParse(Object.fromEntries(formData));
+  if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "ข้อมูลไม่ถูกต้อง" };
+  const { companyId, pay_bank_code, pay_bank_account_no, ...rest } = parsed.data;
+
+  let code: string | null = null;
+  if (pay_bank_code) {
+    code = normalizeBankCode(pay_bank_code);
+    if (!code) return { error: "ไม่รู้จักธนาคารต้นทาง ใช้ชื่อย่อ เช่น KBANK, SCB, BBL หรือรหัส 3 หลัก" };
+  }
+  if (pay_bank_account_no && !code) return { error: "ระบุธนาคารต้นทางด้วย" };
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("companies")
+    .update({ ...rest, pay_bank_code: code, pay_bank_account_no: pay_bank_account_no || null })
+    .eq("id", companyId)
+    .is("deleted_at", null);
+  if (error) {
+    if (error.code === "42703") return { error: "ยังไม่ได้รัน migration 011 (ยังไม่มีคอลัมน์บัญชีต้นทางสำหรับไฟล์ธนาคาร)" };
+    return { error: `บันทึกไม่สำเร็จ: ${error.message}` };
+  }
   revalidatePath(`/admin/companies/${companyId}`);
   return { ok: true };
 }

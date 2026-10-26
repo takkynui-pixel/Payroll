@@ -104,6 +104,15 @@ export default async function PeriodDetailPage({ params }: { params: Promise<{ p
 
         <StatusPanel periodId={periodId} actions={staffActions(period.status)} />
 
+        {(period.status === "approved" || period.status === "closed") && rows.length > 0 ? (
+          <div className="flex flex-wrap items-center gap-3">
+            <Link href={`/admin/payroll/${periodId}/bank`} className={buttonClass({ variant: "dark" })}>
+              รายงานนำส่งธนาคาร (ไฟล์ text)
+            </Link>
+            <p className="text-sm text-muted">ไฟล์โอนเงินเดือนเข้าบัญชีพนักงาน ออกได้เมื่ออนุมัติงวดแล้ว</p>
+          </div>
+        ) : null}
+
         <section aria-labelledby="results-title" className="space-y-3">
           <h2 id="results-title" className="font-semibold text-ink">
             ผลคำนวณ
