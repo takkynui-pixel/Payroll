@@ -2,9 +2,11 @@ import { z } from "zod";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/types/database";
 import { loadFilingData, loadIdCards, missingCompanyFields, type CompanyRow } from "@/lib/tax/load";
+import { ATTACH_LAYOUTS } from "@/lib/tax/pdf/attach-layout";
 import { buildAnnual, buildMonthly, paginate, type PayeeLine, type PndReport } from "@/lib/tax/pnd";
 
-export const ROWS_PER_PAGE = 6;
+/** จำนวนรายต่อใบแนบตามแบบทางการ: ภ.ง.ด.1 = 8, ภ.ง.ด.1ก = 7 */
+export const rowsPerPageOf = (kind: "pnd1" | "pnd1k") => ATTACH_LAYOUTS[kind].rows.length;
 
 const schema = z.object({
   company: z.uuid(),
@@ -67,5 +69,5 @@ export async function preparePnd(
   if (data.pendingPeriods > 0) warnings.push(`ปี ${year + 543} ยังมี ${data.pendingPeriods} งวดที่ยังไม่อนุมัติ จึงยังไม่ถูกนับในรายงานนี้`);
   if (report.lines.length === 0) warnings.push("ไม่พบรายการจ่ายเงินได้ในช่วงที่เลือก (นับเฉพาะงวดที่อนุมัติหรือปิดงวดแล้ว)");
 
-  return { company: data.company, year, month, additionalNo: add, report, lines, pages: paginate(lines, ROWS_PER_PAGE), warnings };
+  return { company: data.company, year, month, additionalNo: add, report, lines, pages: paginate(lines, rowsPerPageOf(kind)), warnings };
 }

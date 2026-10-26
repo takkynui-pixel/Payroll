@@ -8,8 +8,9 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import fontkit from "@pdf-lib/fontkit";
-import { PDFArray, PDFDict, PDFDocument, PDFFont, PDFName, PDFPage, rgb } from "pdf-lib";
+import { PDFArray, PDFDict, PDFDocument, PDFEmbeddedPage, PDFFont, PDFName, PDFPage, rgb } from "pdf-lib";
 import type { PndReport } from "@/lib/tax/pnd";
+import { ATTACH_LAYOUTS, headerIdCenters, ID_CENTERS, MONEY_COLS } from "./attach-layout";
 
 export type PndKind = "pnd1" | "pnd1k";
 
@@ -51,7 +52,6 @@ export interface BuildPndPdfInput {
   lines: PdfLine[];
   /** ยื่นเพิ่มเติมครั้งที่ */
   additionalNo?: number;
-  rowsPerPage?: number;
 }
 
 type Rect = readonly [number, number, number, number];
@@ -172,10 +172,8 @@ const LAYOUTS: Record<PndKind, Layout> = {
 };
 
 const INK = rgb(0.05, 0.08, 0.2);
-const BLACK = rgb(0, 0, 0);
 
 /** กลุ่มหลักของเลขประจำตัวผู้เสียภาษี 1-4-5-2-1 */
-const ID_GROUPS = [1, 4, 5, 2, 1];
 
 /** ศูนย์กลางช่องตัวเลข 13 หลักของฟอร์ม ภ.ง.ด.1 (วัดจากต้นฉบับ) ปรับตามสัดส่วนความกว้างของฟิลด์ */
 const PND1_ID_CENTERS = [166.6, 183.4, 194.6, 205.9, 217.4, 234.2, 245.5, 256.9, 268.6, 279.8, 296.6, 308.2, 325.0];
@@ -340,212 +338,86 @@ function fillCover(c: Ctx, lay: Layout, input: BuildPndPdfInput, attachPages: nu
 
 /* ------------------------------ ใบแนบ (แนวนอน) ------------------------------ */
 
-const A4_W = 841.89;
-const A4_H = 595.276;
+/**
+ * ใบแนบใช้ไฟล์แบบทางการของกรมสรรพากร (templates/pnd1_attach.pdf, pnd1k_attach.pdf) พิมพ์ข้อมูลทับตรงช่อง
+ * ภ.ง.ด.1 = 8 รายต่อแผ่น (มีวันที่จ่าย)  ภ.ง.ด.1ก = 7 รายต่อแผ่น (มีที่อยู่ผู้มีเงินได้)
+ * แผ่นสุดท้ายพิมพ์ยอดรวมของแผ่นนั้น ตามคำแนะนำในแบบ ("นำไปรวมกับใบแนบแผ่นอื่น") ยอดรวมทั้งหมดอยู่ที่ใบปะหน้า
+ */
+export const ATTACH_ROWS: Record<PndKind, number> = { pnd1: 8, pnd1k: 7 };
 
-function line(c: Ctx, x0: number, y0: number, x1: number, y1: number, t = 0.6) {
-  c.page.drawLine({ start: { x: x0, y: y0 }, end: { x: x1, y: y1 }, thickness: t, color: BLACK });
+/** แยกชื่อกับสกุล: ชื่อ (รวมคำนำหน้า) = คำแรก ส่วนที่เหลือ = สกุล */
+export function splitName(full: string): { name: string; surname: string } {
+  const t = full.trim().replace(/\s+/g, " ");
+  const i = t.indexOf(" ");
+  return i < 0 ? { name: t, surname: "" } : { name: t.slice(0, i), surname: t.slice(i + 1) };
 }
 
-function box(c: Ctx, x: number, y: number, w: number, h: number, t = 0.6) {
-  c.page.drawRectangle({ x, y, width: w, height: h, borderColor: BLACK, borderWidth: t });
+/** เลขประจำตัว 13 หลัก ใส่ลงกล่องตามกลุ่ม 1-4-5-2-1 ของแบบ (centers = ศูนย์กลางกล่องแต่ละหลัก) */
+function putIdDigits(c: Ctx, value: string | null | undefined, rect: Rect, centers: readonly number[], size = 11) {
+  putDigits(c, digits(value), [...centers], rect[1] + 3.5, size);
 }
 
-function text(c: Ctx, s: string, x: number, y: number, size = 10, bold = false) {
-  c.page.drawText(s, { x, y, size, font: bold ? c.bold : c.font, color: BLACK });
-}
-
-function textR(c: Ctx, s: string, xRight: number, y: number, size = 10, bold = false) {
+/** ช่องเงินแบบ บาท | สต. ตามเส้นแบ่งของแบบ */
+function putAttachMoney(c: Ctx, col: { left: number; divider: number; right: number }, y: number, satang: number, size = 10.5, bold = false) {
   const f = bold ? c.bold : c.font;
-  c.page.drawText(s, { x: xRight - f.widthOfTextAtSize(s, size), y, size, font: f, color: BLACK });
-}
-
-function textC(c: Ctx, s: string, xCenter: number, y: number, size = 10, bold = false) {
-  const f = bold ? c.bold : c.font;
-  c.page.drawText(s, { x: xCenter - f.widthOfTextAtSize(s, size) / 2, y, size, font: f, color: BLACK });
-}
-
-/** ช่องตัวเลข 13 หลักแบบแบ่งกลุ่ม 1-4-5-2-1 วาดกรอบเอง คืนความกว้างรวม */
-function idBoxes(c: Ctx, value: string | null, x: number, y: number, cell: number, h: number, size: number): number {
-  const d = digits(value);
-  let cx = x;
-  let k = 0;
-  ID_GROUPS.forEach((g, gi) => {
-    if (gi > 0) {
-      line(c, cx, y + h / 2, cx + 3, y + h / 2, 0.5);
-      cx += 3;
-    }
-    for (let i = 0; i < g; i++) {
-      box(c, cx, y, cell, h, 0.5);
-      if (d[k]) textC(c, d[k], cx + cell / 2, y + (h - size * 0.7) / 2, size);
-      cx += cell;
-      k++;
-    }
-  });
-  return cx - x;
-}
-
-function drawCbSmall(c: Ctx, x: number, y: number, checked: boolean) {
-  box(c, x, y, 8, 8, 0.6);
-  if (checked) drawCheck(c, [x, y, x + 8, y + 8]);
+  const b = baht(satang);
+  c.page.drawText(b, { x: col.divider - 3 - f.widthOfTextAtSize(b, size), y, size, font: f, color: INK });
+  const sat = satangPart(satang);
+  c.page.drawText(sat, { x: (col.divider + col.right) / 2 - f.widthOfTextAtSize(sat, size) / 2, y, size, font: f, color: INK });
 }
 
 function attachSheet(
   doc: PDFDocument,
+  template: PDFEmbeddedPage,
   fonts: { font: PDFFont; bold: PDFFont },
   input: BuildPndPdfInput,
   pageLines: PdfLine[],
   pageNo: number,
   pageCount: number,
   startIndex: number,
-  rowsPerPage: number,
-  totals: { page: { income: number; tax: number }; grand?: { income: number; tax: number } },
 ) {
-  const page = doc.addPage([A4_W, A4_H]);
+  const lay = ATTACH_LAYOUTS[input.kind];
+  const page = doc.addPage([template.width, template.height]);
+  page.drawPage(template);
   const c: Ctx = { page, ...fonts };
-  const { kind, company } = input;
-  const M = 28;
-  const right = A4_W - M;
-  const k1 = kind === "pnd1";
+  const { company } = input;
+  const k1 = input.kind === "pnd1";
 
   // หัวแผ่น
-  text(c, `ใบแนบ ${k1 ? "ภ.ง.ด.1" : "ภ.ง.ด.1ก"}`, M, A4_H - 40, 18, true);
-  text(c, "เลขประจำตัวผู้เสียภาษีอากร (13 หลัก) ของผู้มีหน้าที่หักภาษี ณ ที่จ่าย", 162, A4_H - 36, 9);
-  idBoxes(c, company.tax_id, 432, A4_H - 44, 12, 16, 10);
-  text(c, "สาขาที่", 650, A4_H - 36, 9);
-  const bd = digits(company.branch_no).padStart(company.branch_no ? 5 : 0, "0");
-  for (let i = 0; i < 5; i++) {
-    box(c, 686 + i * 12, A4_H - 44, 12, 16, 0.5);
-    if (bd[i]) textC(c, bd[i], 686 + i * 12 + 6, A4_H - 44 + 4.5, 10);
+  putIdDigits(c, company.tax_id, lay.taxId, headerIdCenters(lay.taxIdLeft));
+  const branch = digits(company.branch_no);
+  if (branch) {
+    const centers = evenCenters(lay.branch[0] + 1, lay.branch[2] - 1, 5);
+    putDigits(c, branch.padStart(5, "0"), centers, lay.branch[1] + 3.5, 11);
   }
-  text(c, `แผ่นที่ ${pageNo} ในจำนวน ${pageCount} แผ่น`, right - 120, A4_H - 66, 10);
+  putText(c, lay.pageNo, String(pageNo), { size: 10.5, align: "center" });
+  putText(c, lay.pageTotal, String(pageCount), { size: 10.5, align: "center" });
+  // ประเภทเงินได้: (1) เงินได้ 40(1) กรณีทั่วไป
+  drawCheck(c, lay.typeBoxes[0]);
 
-  // ประเภทเงินได้
-  const ty = A4_H - 66;
-  text(c, "ประเภทเงินได้", M, ty, 9, true);
-  const types = [
-    "(1) เงินได้ตามมาตรา 40(1) เงินเดือน ค่าจ้าง ฯลฯ กรณีทั่วไป",
-    "(2) มาตรา 40(1) กรณีได้รับอนุมัติจากกรมสรรพากรให้หักอัตราร้อยละ 3",
-    "(3) มาตรา 40(1)(2) กรณีนายจ้างจ่ายให้ครั้งเดียวเพราะเหตุออกจากงาน",
-    "(4) มาตรา 40(2) กรณีผู้รับเงินได้เป็นผู้อยู่ในประเทศไทย",
-    "(5) มาตรา 40(2) กรณีผู้รับเงินได้มิได้เป็นผู้อยู่ในประเทศไทย",
-  ];
-  types.forEach((t, i) => {
-    const yy = ty - i * 11;
-    drawCbSmall(c, 100, yy - 1.5, i === 0);
-    text(c, t, 112, yy, 8.5);
-  });
-
-  // ตาราง
-  const top = ty - 5 * 11 - 4;
-  const headH = 40;
-  const rowH = k1 ? 44 : 52;
-  const colW = k1
-    ? { no: 26, id: 188, name: 250, date: 66, inc: 82, incS: 26, tax: 62, taxS: 26 }
-    : { no: 26, id: 188, name: 316, date: 0, inc: 84, incS: 26, tax: 62, taxS: 26 };
-  const cond = right - M - Object.values(colW).reduce((s, v) => s + v, 0);
-  const xs: number[] = [];
-  let x = M;
-  for (const w of [colW.no, colW.id, colW.name, colW.date, colW.inc, colW.incS, colW.tax, colW.taxS, cond]) {
-    xs.push(x);
-    x += w;
-  }
-  xs.push(x);
-  const bodyTop = top - headH;
-  const bodyBottom = bodyTop - rowH * rowsPerPage;
-  const totH = 18;
-  const tableBottom = bodyBottom - totH * 2;
-
-  box(c, M, tableBottom, right - M, top - tableBottom, 0.9);
-  // หัวคอลัมน์
-  line(c, M, bodyTop, right, bodyTop, 0.9);
-  const heads: [number, number, string, string?][] = [
-    [0, 1, "ลำดับ", "ที่"],
-    [1, 2, "เลขประจำตัวผู้เสียภาษีอากร (13 หลัก)", "ของผู้มีเงินได้"],
-    [2, 3, k1 ? "ชื่อผู้มีเงินได้ (ให้ระบุเป็น นาย นาง นางสาว หรือยศ)" : "ชื่อผู้มีเงินได้ และที่อยู่", k1 ? undefined : "(ให้ระบุเป็น นาย นาง นางสาว หรือยศ)"],
-  ];
-  heads.forEach(([a, b, l1, l2]) => {
-    const cx = (xs[a] + xs[b]) / 2;
-    textC(c, l1, cx, top - (l2 ? 16 : 23), 8.5, true);
-    if (l2) textC(c, l2, cx, top - 28, 8.5, true);
-  });
-  let ci = 3;
-  if (k1) {
-    textC(c, "วัน เดือน ปี", (xs[3] + xs[4]) / 2, top - 16, 8.5, true);
-    textC(c, "ที่จ่าย", (xs[3] + xs[4]) / 2, top - 28, 8.5, true);
-  }
-  ci = 4;
-  textC(c, k1 ? "จำนวนเงินที่จ่าย" : "จำนวนเงินได้", (xs[ci] + xs[ci + 2]) / 2, top - 9, 8.5, true);
-  textC(c, k1 ? "ในครั้งนี้" : "ทั้งปี", (xs[ci] + xs[ci + 2]) / 2, top - 19, 8.5, true);
-  textC(c, "บาท", (xs[ci] + xs[ci + 1]) / 2, top - 34, 8.5, true);
-  textC(c, "สต.", (xs[ci + 1] + xs[ci + 2]) / 2, top - 34, 8.5, true);
-  textC(c, "ภาษีที่หักและนำส่ง", (xs[6] + xs[8]) / 2, top - 9, 8.5, true);
-  textC(c, k1 ? "ในครั้งนี้" : "ทั้งปี", (xs[6] + xs[8]) / 2, top - 19, 8.5, true);
-  textC(c, "บาท", (xs[6] + xs[7]) / 2, top - 34, 8.5, true);
-  textC(c, "สต.", (xs[7] + xs[8]) / 2, top - 34, 8.5, true);
-  textC(c, "เงื่อนไข", (xs[8] + xs[9]) / 2, top - 16, 8.5, true);
-  textC(c, "การหักภาษี", (xs[8] + xs[9]) / 2, top - 28, 8.5, true);
-  // เส้นแนวตั้ง
-  for (let i = 1; i < xs.length - 1; i++) {
-    const skip = (!k1 && i === 3) || i === 5 || i === 7;
-    const yTop = skip ? top - 24 : top;
-    // คอลัมน์ซ้าย (ลำดับ/เลขประจำตัว/ชื่อ/วันที่) หยุดที่ท้ายแถวข้อมูล เพื่อให้ข้อความแถวรวมพาดผ่านได้
-    line(c, xs[i], i <= 3 ? bodyBottom : tableBottom, xs[i], yTop, 0.6);
-  }
-  line(c, xs[4], top - 24, xs[6], top - 24, 0.6);
-  line(c, xs[6], top - 24, xs[8], top - 24, 0.6);
-
-  // แถวข้อมูล
-  for (let r = 0; r < rowsPerPage; r++) {
-    const yBottom = bodyTop - rowH * (r + 1);
-    line(c, M, yBottom, right, yBottom, 0.5);
+  lay.rows.forEach((row, r) => {
     const l = pageLines[r];
-    textC(c, String(startIndex + r + 1), (xs[0] + xs[1]) / 2, yBottom + rowH / 2 - 3, 10);
-    if (!l) continue;
-    idBoxes(c, l.idCard, xs[1] + 6, yBottom + rowH / 2 - 8, 11.2, 16, 9.5);
-    const nameW = xs[3] - xs[2] - 8;
-    text(c, fitText(c.font, l.employeeName, 10.5, nameW), xs[2] + 4, yBottom + rowH - 17, 10.5);
-    if (!k1) {
-      const addr = l.address ? `ที่อยู่ ${l.address}` : "ที่อยู่ -";
-      const a1 = fitText(c.font, addr, 8.5, nameW);
-      text(c, a1, xs[2] + 4, yBottom + rowH - 30, 8.5);
-    }
-    if (k1 && l.payDate) textC(c, beDate(l.payDate), (xs[3] + xs[4]) / 2, yBottom + rowH / 2 - 3, 9.5);
-    textR(c, baht(l.incomeSatang), xs[5] - 4, yBottom + rowH / 2 - 3, 10.5);
-    textC(c, satangPart(l.incomeSatang), (xs[5] + xs[6]) / 2, yBottom + rowH / 2 - 3, 10.5);
-    textR(c, baht(l.taxSatang), xs[7] - 4, yBottom + rowH / 2 - 3, 10.5);
-    textC(c, satangPart(l.taxSatang), (xs[7] + xs[8]) / 2, yBottom + rowH / 2 - 3, 10.5);
-    textC(c, "[ 1 ]", (xs[8] + xs[9]) / 2, yBottom + rowH / 2 - 3, 10);
-  }
+    if (!l) return;
+    putText(c, row.no, String(startIndex + r + 1), { size: 10.5, align: "center" });
+    putIdDigits(c, l.idCard, row.id, ID_CENTERS);
+    const { name, surname } = splitName(l.employeeName);
+    putText(c, row.name, name, { size: 11, minSize: 8 });
+    putText(c, row.surname, surname, { size: 11, minSize: 8 });
+    if (k1 && row.date && l.payDate) putText(c, row.date, beDate(l.payDate), { size: 10.5, minSize: 8, align: "center" });
+    if (!k1 && row.address) putText(c, row.address, l.address, { size: 10, minSize: 7.5 });
+    putAttachMoney(c, MONEY_COLS.income, row.income[1] + 3.5, l.incomeSatang);
+    putAttachMoney(c, MONEY_COLS.tax, row.tax[1] + 3.5, l.taxSatang);
+    // เงื่อนไขการหักภาษี: 1 = หัก ณ ที่จ่าย
+    putText(c, row.cond, "1", { size: 10.5, align: "center" });
+  });
 
-  // แถวรวม
-  const t1 = bodyBottom - totH;
-  line(c, M, t1, right, t1, 0.6);
-  textR(c, "รวมยอดเงินได้และภาษีที่นำส่งในหน้านี้ (นำไปรวมกับใบต่อ ถ้ามี)", xs[4] - 6, t1 + 5.5, 9, true);
-  const money = (rowY: number, v?: { income: number; tax: number }) => {
-    if (!v) return;
-    textR(c, baht(v.income), xs[5] - 4, rowY, 10.5, true);
-    textC(c, satangPart(v.income), (xs[5] + xs[6]) / 2, rowY, 10.5, true);
-    textR(c, baht(v.tax), xs[7] - 4, rowY, 10.5, true);
-    textC(c, satangPart(v.tax), (xs[7] + xs[8]) / 2, rowY, 10.5, true);
-  };
-  money(t1 + 5.5, totals.page);
-  textR(c, "รวมยอดเงินได้และภาษีที่นำส่ง (นำไปกรอกในแบบแสดงรายการภาษี)", xs[4] - 6, tableBottom + 5.5, 9, true);
-  money(tableBottom + 5.5, totals.grand);
+  const sumIncome = pageLines.reduce((s, l) => s + l.incomeSatang, 0);
+  const sumTax = pageLines.reduce((s, l) => s + l.taxSatang, 0);
+  putAttachMoney(c, MONEY_COLS.income, lay.totalIncome[1] + 3.5, sumIncome, 10.5, true);
+  putAttachMoney(c, MONEY_COLS.tax, lay.totalTax[1] + 3.5, sumTax, 10.5, true);
 
-  // ท้ายแผ่น: หมายเหตุ + ลายเซ็น
-  const fy = tableBottom - 16;
-  text(c, "หมายเหตุ", M, fy, 8.5, true);
-  text(c, "เงื่อนไขการหักภาษีให้กรอกตามนี้ (1) หัก ณ ที่จ่าย  (2) ออกให้ตลอดไป  (3) ออกให้ครั้งเดียว  (4) อื่น ๆ (ระบุ)", M + 40, fy, 8.5);
-  text(c, "(ให้กรอกเลขประจำตัวผู้เสียภาษีอากรของผู้มีเงินได้ให้ครบถ้วน หากไม่มีให้ระบุเลขประจำตัวประชาชน)", M, fy - 11, 8);
-  const sx = 560;
-  text(c, "ลงชื่อ", sx, fy - 4, 10);
-  line(c, sx + 28, fy - 5, sx + 190, fy - 5, 0.4);
-  text(c, "ผู้จ่ายเงิน", sx + 194, fy - 4, 10);
-  if (company.signer_name) textC(c, `(${company.signer_name})`, sx + 109, fy - 18, 10);
-  if (company.signer_position) textC(c, company.signer_position, sx + 109, fy - 31, 10);
-  text(c, "ตำแหน่ง", sx - 14, fy - 31, 10);
-  text(c, "วันที่ยื่น ........ เดือน ................. พ.ศ. ........", sx - 14, fy - 44, 10);
+  putText(c, lay.signName, company.signer_name ? `${company.signer_name}` : null, { size: 10.5, align: "center" });
+  putText(c, lay.signPosition, company.signer_position, { size: 10.5 });
 }
 
 /** ลบ widget (ช่องกรอก/ปุ่ม) ทุกตัวออกจากทุกหน้า และถอด AcroForm ออกจากไฟล์ */
@@ -566,7 +438,7 @@ function stripFormFields(doc: PDFDocument) {
 
 export async function buildPndPdf(input: BuildPndPdfInput): Promise<Uint8Array> {
   const lay = LAYOUTS[input.kind];
-  const rowsPerPage = input.rowsPerPage ?? 6;
+  const rowsPerPage = ATTACH_ROWS[input.kind];
 
   const doc = await PDFDocument.load(await readAsset(path.join("templates", lay.template)));
   doc.registerFontkit(fontkit);
@@ -576,6 +448,11 @@ export async function buildPndPdf(input: BuildPndPdfInput): Promise<Uint8Array> 
   // เอาช่องกรอกของไฟล์ต้นฉบับ (รวมปุ่ม "ล้างข้อมูล") ออก แล้วพิมพ์ทับตำแหน่งเดิม ผลลัพธ์จึงเป็น PDF แบบพิมพ์ได้ทันที
   stripFormFields(doc);
 
+  // ใบแนบแบบทางการ (แนวนอน) ฝังเป็นหน้าแม่แบบ ใช้ซ้ำทุกแผ่น
+  const attachDoc = await PDFDocument.load(await readAsset(path.join("templates", ATTACH_LAYOUTS[input.kind].template)));
+  stripFormFields(attachDoc);
+  const [attachTemplate] = await doc.embedPdf(attachDoc, [0]);
+
   const pageChunks: PdfLine[][] = [];
   for (let i = 0; i < input.lines.length; i += rowsPerPage) pageChunks.push(input.lines.slice(i, i + rowsPerPage));
   if (pageChunks.length === 0) pageChunks.push([]);
@@ -584,23 +461,7 @@ export async function buildPndPdf(input: BuildPndPdfInput): Promise<Uint8Array> 
   fillCover({ page: cover, font, bold }, lay, input, pageChunks.length);
 
   pageChunks.forEach((chunk, i) => {
-    attachSheet(
-      doc,
-      { font, bold },
-      input,
-      chunk,
-      i + 1,
-      pageChunks.length,
-      i * rowsPerPage,
-      rowsPerPage,
-      {
-        page: {
-          income: chunk.reduce((s, l) => s + l.incomeSatang, 0),
-          tax: chunk.reduce((s, l) => s + l.taxSatang, 0),
-        },
-        grand: i === pageChunks.length - 1 ? { income: input.report.incomeSatang, tax: input.report.taxSatang } : undefined,
-      },
-    );
+    attachSheet(doc, attachTemplate, { font, bold }, input, chunk, i + 1, pageChunks.length, i * rowsPerPage);
   });
 
   doc.setTitle(input.kind === "pnd1" ? "ภ.ง.ด.1" : "ภ.ง.ด.1ก");
