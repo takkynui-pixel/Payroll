@@ -24,7 +24,6 @@ export async function GET(req: Request, ctx: { params: Promise<{ kind: string }>
     additionalNo: p.additionalNo,
     report: p.report,
     lines: p.lines,
-    rowsPerPage: 6,
   });
 
   const name = kind === "pnd1" ? `PND1_${p.year + 543}-${String(p.month).padStart(2, "0")}.pdf` : `PND1K_${p.year + 543}.pdf`;
