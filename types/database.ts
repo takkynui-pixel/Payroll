@@ -73,6 +73,12 @@ export type Database = {
           wcf_account_no: string | null;
           wcf_business_code: string | null;
           wcf_rate: number;
+          /** [PENDING 011] */
+          pay_bank_code: string | null;
+          pay_bank_account_no: string | null;
+          pay_account_name: string | null;
+          bank_customer_id: string | null;
+          bank_file_format: string;
           addr_moo: string | null;
           addr_soi: string | null;
           addr_road: string | null;
@@ -100,6 +106,11 @@ export type Database = {
           wcf_account_no?: string | null;
           wcf_business_code?: string | null;
           wcf_rate?: number;
+          pay_bank_code?: string | null;
+          pay_bank_account_no?: string | null;
+          pay_account_name?: string | null;
+          bank_customer_id?: string | null;
+          bank_file_format?: string;
           addr_moo?: string | null;
           addr_soi?: string | null;
           addr_road?: string | null;
@@ -127,6 +138,11 @@ export type Database = {
           wcf_account_no?: string | null;
           wcf_business_code?: string | null;
           wcf_rate?: number;
+          pay_bank_code?: string | null;
+          pay_bank_account_no?: string | null;
+          pay_account_name?: string | null;
+          bank_customer_id?: string | null;
+          bank_file_format?: string;
           addr_moo?: string | null;
           addr_soi?: string | null;
           addr_road?: string | null;
@@ -1035,6 +1051,11 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      /** [PENDING 011] */
+      log_bank_file_export: {
+        Args: { p_bank?: string; p_count: number; p_format: string; p_period: string; p_total_satang: number };
+        Returns: undefined;
+      };
       change_payroll_period_status: {
         Args: { p_new_status: string; p_note?: string; p_period: string };
         Returns: Database["public"]["Tables"]["payroll_periods"]["Row"];
